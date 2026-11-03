@@ -238,6 +238,9 @@ function showMenu(): void {
     panel.append(el("p", "note", t().alreadyPicked(weaponLabel(done.pick), done.won)));
   }
   panel.append(btn(t().randomDuel, "ghost", () => reset(randomMatch())));
+  panel.append(Object.assign(document.createElement("a"), {
+    href: "./privacy.html", className: "privacy-link", textContent: "Privacy · 隱私政策",
+  }));
   panel.hidden = false;
 }
 

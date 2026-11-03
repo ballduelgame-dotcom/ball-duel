@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#0b0b14">
+  <meta name="description" content="Privacy policy for the Ball Duel browser game and Ball Duel Uploader: local storage, analytics, YouTube permissions and your choices.">
+  <title>Privacy Policy · Ball Duel &amp; Ball Duel Uploader</title>
+  <link rel="icon" href="./favicon-32.png">
+  <link rel="stylesheet" href="./policy.css">
+</head>
+<body>
+<main>
+  <header>
+    <a class="brand" href="./"><img src="./icon-512.png" alt="" width="44" height="44">Ball Duel</a>
+    <h1>Privacy Policy</h1>
+    <p class="muted">Ball Duel browser game &amp; Ball Duel Uploader · Last updated: November 4, 2026</p>
+    <nav aria-label="Page navigation"><a href="./">Play Ball Duel</a><a href="./uploader.html">About Ball Duel Uploader</a><a href="#zh" lang="zh-Hant">中文摘要</a></nav>
+  </header>
+  <div class="summary"><p>The game runs in your browser without a player account. Game preferences and daily results stay in your browser. We use GoatCounter for usage statistics.</p><p>Ball Duel Uploader is a separate desktop command-line tool for the operator of the official Ball Duel YouTube channel. Players do not need to sign in to Google or grant YouTube access.</p></div>
+  <section aria-labelledby="scope"><h2 id="scope">1. Who this policy covers</h2>
+    <p>This policy describes how the Ball Duel operator handles information through the game and Ball Duel Uploader. For privacy questions or requests, contact <a href="mailto:ballduel.game@gmail.com">ballduel.game@gmail.com</a>.</p>
+  </section>
+  <section aria-labelledby="game"><h2 id="game">2. Playing and sharing the game</h2>
+    <p>The game stores your language, mute preference, and daily picks and results in your browser’s local storage. These records are not sent to a Ball Duel account server. They remain until you clear this site’s browser data or your browser removes them.</p>
+    <p>Match recordings are generated in browser memory from the game canvas and synthesized game audio. The game does not request your camera or microphone. A recording is downloaded or sent to an app you select only when you use the save or share controls. Text sharing uses your device’s share sheet or clipboard. We do not automatically upload players’ recordings to YouTube.</p>
+  </section>
+  <section aria-labelledby="analytics"><h2 id="analytics">3. Usage analytics and hosting</h2>
+    <p>The game uses GoatCounter to understand visits and interactions such as choosing a side, finishing a duel, changing language, and selecting save or share. Depending on the analytics configuration, statistics can include page path and title, referrer or campaign information, browser and operating system, screen size, and approximate country derived from the request’s IP address.</p>
+    <p>GoatCounter’s analytics do not use tracking cookies. This does not mean that no request data is processed: network requests reach GoatCounter, which processes them according to its <a href="https://www.goatcounter.com/help/privacy">privacy documentation</a>. We use the resulting statistics to improve the game and assess interest, rather than to identify individual players.</p>
+    <p>The site is hosted on GitHub Pages. GitHub and other service providers may process technical request information for delivery, security, and operation under their own policies. See the <a href="https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement">GitHub Privacy Statement</a>. This policy page and the uploader information page do not load the game’s analytics script.</p>
+  </section>
+  <section aria-labelledby="google"><h2 id="google">4. Google and YouTube data used by Ball Duel Uploader</h2>
+    <p>The uploader uses YouTube API Services. Only the channel operator authorizes the tool. It requests these Google OAuth permissions:</p>
+    <ul>
+      <li><code>youtube.upload</code>: permission to upload and manage YouTube videos. The implemented upload command sends locally selected video files, titles, descriptions, tags, language, category, and visibility or scheduling settings to the authorized channel.</li>
+      <li><code>youtube.readonly</code>: permission to view the authorized YouTube account. The tool uses it to confirm the channel’s name and handle and to retrieve status and view, like, and comment counts for videos recorded in its upload log. It does not retrieve comment text.</li>
+    </ul>
+    <p>These permissions do not grant access to Gmail messages, Google Drive files, or the Google account password. The tool does not ask for or store your Google password.</p>
+    <h3>Storage and retention</h3>
+    <p>The OAuth client configuration and refresh token are saved locally outside the source repository, in <code>%APPDATA%\ballduel\</code> on Windows or <code>~/.config/ballduel/</code> on other supported systems. They remain until removed by the operator; Google may also expire or revoke authorization. They are used to obtain access tokens and make authorized requests to Google, not published with the game.</p>
+    <p>The local upload log, <code>clips/uploads.json</code>, contains video IDs, titles, upload times, and visibility to help prevent duplicate uploads. It remains until the operator removes it. Retrieved channel information and statistics are displayed in the terminal; the current tool does not write those statistics to a separate database. Uploaded videos and their metadata remain on YouTube until changed or deleted there.</p>
+    <h3>Use, sharing, and access</h3>
+    <p>Google user data is used only to provide the uploader’s upload, channel confirmation, duplicate-prevention, and statistics features. We do not sell it, use it for advertising or profiling, or use it to train AI models. It is not shared with unrelated third parties. The channel operator can access local files and displayed information as needed to run the tool; selected videos and metadata are transmitted to Google to carry out the requested operation.</p>
+    <p>Ball Duel Uploader’s use and transfer of information received from Google APIs will adhere to the <a href="https://developers.google.com/terms/api-services-user-data-policy">Google API Services User Data Policy</a>, including its Limited Use requirements.</p>
+    <p>Google and YouTube process data under the <a href="https://policies.google.com/privacy">Google Privacy Policy</a>. Use of YouTube is also subject to the <a href="https://www.youtube.com/t/terms">YouTube Terms of Service</a>.</p>
+  </section>
+  <section aria-labelledby="choices"><h2 id="choices">5. Your choices and deletion</h2>
+    <ul>
+      <li><strong>Players:</strong> clear this site’s browser data to remove saved preferences and results. This resets your local game history. Browser privacy controls or content blockers can limit analytics requests.</li>
+      <li><strong>Authorized channel operator:</strong> revoke Ball Duel Uploader’s access through <a href="https://myaccount.google.com/connections">Google Account connections</a>. Remove the local token and client configuration to remove saved credentials from the device. Revoking access does not delete uploaded videos or local upload logs; remove those separately if desired.</li>
+      <li><strong>Privacy requests:</strong> email <a href="mailto:ballduel.game@gmail.com">ballduel.game@gmail.com</a> for access, correction, or deletion requests. We will address data under our control. Aggregate analytics may not allow us to identify a particular visitor, and provider-held records are subject to that provider’s procedures.</li>
+    </ul>
+    <p>Please do not send passwords, verification codes, OAuth tokens, or client secrets by email.</p>
+  </section>
+  <section aria-labelledby="changes"><h2 id="changes">6. Changes to this policy</h2><p>We will update this page and the date above when our data practices change. Review it before authorizing the uploader or using new features.</p></section>
+  <section id="zh" lang="zh-Hant" aria-labelledby="zh-title"><h2 id="zh-title">中文摘要</h2>
+    <p>本政策涵蓋 Ball Duel 網頁遊戲與 Ball Duel Uploader 上傳工具。遊戲不需玩家帳號，語言、靜音偏好及每日選邊結果保存在瀏覽器；影片在本機產生，只會在你操作儲存或分享時交給你選擇的目的地。</p>
+    <p>遊戲使用 GoatCounter 記錄瀏覽與操作統計，例如瀏覽器、螢幕尺寸、來源及概略國家。統計不使用追蹤 Cookie，但服務商仍會處理連線請求。網站由 GitHub Pages 提供。</p>
+    <p>上傳工具僅供官方頻道經營者使用，請求 YouTube 上傳與唯讀權限，用來上傳影片、確認頻道及讀取影片統計。授權檔存在經營者電腦的 repo 外資料夾；上傳紀錄另保存在本機。Google 資料不出售、不用於廣告、個人側寫或 AI 模型訓練。</p>
+    <p>你可以清除網站資料，或至 Google 帳戶連結撤銷工具授權。撤銷授權不會刪除已上傳影片，需另行處理。完整細節見上方英文條文。聯絡：<a href="mailto:ballduel.game@gmail.com">ballduel.game@gmail.com</a>。</p>
+  </section>
+  <footer><a href="./">Ball Duel</a> · <a href="./uploader.html">Ball Duel Uploader</a> · <a href="mailto:ballduel.game@gmail.com">Contact</a></footer>
+</main>
+</body>
+</html>

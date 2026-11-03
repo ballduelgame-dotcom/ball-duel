@@ -45,6 +45,8 @@ html, body { margin: 0; height: 100%; background: var(--bg); }
 
 .lead { margin: 0; font-weight: 700; font-size: 18px; text-align: center; }
 .note { margin: 0; font-size: 13px; color: var(--muted); text-align: center; }
+.privacy-link { align-self: center; color: var(--muted); font-size: 12px; padding: 4px 12px; text-underline-offset: 3px; }
+.privacy-link:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 
 .row { display: flex; gap: 10px; }
 .row > button { flex: 1; }
