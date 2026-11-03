@@ -35,7 +35,8 @@ muteBtn.onclick = () => {
   save("ballduel.muted", sfx.muted);
   syncMute();
 };
-const shortUrl = location.host || "ballduel.app";
+// host alone 404s on GitHub Pages: project sites live under /<repo>/
+const shortUrl = (location.host + location.pathname).replace(/\/(index\.html)?$/, "") || "ballduel.app";
 
 const langSelect = document.querySelector<HTMLSelectElement>("#lang")!;
 for (const l of LANGS) langSelect.add(new Option(langName(l), l));

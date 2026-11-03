@@ -233,7 +233,7 @@ export class Renderer {
     const c = this.ctx;
     const secs = Math.floor(sim.time);
     text(c, `${secs}s`, W / 2, 1030, 32, "#888", "center");
-    text(c, this.caption.url, W / 2, 1200, 34, "#9f8cff", "center", true);
+    text(c, this.caption.url, W / 2, 1200, 34, "#9f8cff", "center", true, FULL);
   }
 
   private burst(x: number, y: number, color: string, n: number): void {
