@@ -1,0 +1,55 @@
+# YouTube 自動上傳：一次性設定
+
+`tools/youtube.mjs` 用 YouTube Data API 上傳 `clips/` 裡的影片，標題和說明讀自 `docs/captions.md`，也能抓播放數。使用前要先在 Google Cloud 建一個「OAuth 用戶端」（約 10 分鐘，全程用 ballduel.game@gmail.com）。
+
+## 給 Codex 的 prompt
+
+```
+請用已登入 ballduel.game@gmail.com 的瀏覽器，在 Google Cloud 為 YouTube 上傳腳本建立 OAuth 用戶端。
+規則：密碼、驗證碼、付款資訊一律停下來讓我自己處理；不要啟用計費、不要開試用；每個「建立／發布／同意」按鈕按下前先告訴我。
+
+1. 打開 https://console.cloud.google.com/ ，若要求同意服務條款，停下讓我按。國家選台灣。
+2. 建立新專案，名稱 ball-duel（不要選機構）。
+3. 「API 和服務」→「程式庫」→ 搜尋 YouTube Data API v3 → 啟用。
+4. 「Google Auth Platform」（或「OAuth 同意畫面」）→ 開始設定：
+   - 應用程式名稱：Ball Duel Uploader
+   - 使用者支援電子郵件、開發人員聯絡資訊：ballduel.game@gmail.com
+   - 目標對象：外部（External）
+5. 「目標對象」頁面 → 發布應用程式（Publish app / 正式版）。會提示未驗證，確認即可，不需要送審。
+6. 「用戶端」→ 建立用戶端 → 應用程式類型選「電腦版應用程式（Desktop app）」→ 名稱 ball-duel-cli → 建立。
+7. 下載用戶端的 JSON 檔，存成：
+   C:\Users\AutoDrinker\AppData\Roaming\ballduel\client_secret.json
+   （資料夾不存在就建立；不要把檔案內容貼到聊天裡）
+完成後回報：專案 ID、API 是否已啟用、應用程式狀態（測試中／正式版）、JSON 是否已存到指定路徑。
+```
+
+為什麼第 5 步要「發布」：留在「測試中」的話，登入授權 7 天就失效，每週要重登一次。發布後不需要 Google 審核（只有你自己用），登入時會看到「Google 尚未驗證這個應用程式」，點「進階」→「前往 Ball Duel Uploader」即可。
+
+## 登入（一次）
+
+```bash
+node tools/youtube.mjs auth
+```
+
+瀏覽器會打開 Google 登入頁：選 **ballduel.game@gmail.com** → 選 **Ball Duel 頻道**（若問要用哪個頻道）→ 允許。終端機顯示頻道名稱就完成。授權存在 `%APPDATA%\ballduel\youtube-token.json`，不在 repo 裡。
+
+## 使用
+
+```bash
+node tools/youtube.mjs upload 02 08               # 上傳第 02、08 支英文版（私人）
+node tools/youtube.mjs upload 02 --lang zh-TW     # 中文版
+node tools/youtube.mjs upload 02 --dry-run        # 只顯示會送出的標題與說明
+node tools/youtube.mjs stats                      # 所有已上傳影片的播放／讚／留言
+```
+
+上傳紀錄在 `clips/uploads.json`，同一支不會傳兩次。
+
+## 限制：上傳後要手動改「公開」
+
+Google 規定：未經稽核的 API 專案上傳的影片會被**鎖成私人**。所以第一週的流程是：
+
+1. `node tools/youtube.mjs upload 02 08` 上傳
+2. 到 YouTube Studio → 內容 → 把影片改成「公開」（或在 Studio 設排程）
+3. 自己留言貼遊戲網址並置頂（API 沒辦法置頂留言）
+
+要完全自動（`--public`、`--at 2026-11-05T20:00+08:00` 排程），要先申請 YouTube API 稽核：在 Google 搜尋「YouTube API Services Audit and Quota Extension Form」填表，審核需要幾天到幾週。建議等第一週數字出來、確定要繼續再申請。
