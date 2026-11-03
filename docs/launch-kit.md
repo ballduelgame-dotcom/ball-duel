@@ -1,6 +1,6 @@
 # Ball Duel 一週驗證發文工具包
 
-目標：7 天內發 10 支 9:16 短片，看這個格式有沒有反應。這一步要用你自己的帳號發文，我不會代發。
+目標：7 天內發 10 支 9:16 短片，看這個格式有沒有反應。用下面的 Ball Duel 官方帳號發文（由你操作，Claude 不代發）。
 
 ## 停損條件（先講好）
 
@@ -10,7 +10,20 @@
 
 反過來，只要有一支超過 1 萬播放，或者留言裡有人問「遊戲叫什麼／在哪玩」，就繼續做下一步（分享卡、國家大亂鬥、實況模式）。
 
-## 第 0 步：打開流量統計（約 3 分鐘，要你操作）
+## 官方帳號（2026-11-03 開好）
+
+| 平台 | 帳號 | 網址 |
+|---|---|---|
+| YouTube | @ballduelgame | https://www.youtube.com/@ballduelgame |
+| TikTok | @ballduel | https://www.tiktok.com/@ballduel |
+| Instagram | @ballduelgame | https://www.instagram.com/ballduelgame/ |
+| Threads | @ballduelgame | https://www.threads.com/@ballduelgame |
+
+全部用 ballduel.game@gmail.com 註冊。TikTok 維持個人帳號（企業帳號不能用熱門音樂）。Instagram 的網站連結要在手機 App → 編輯個人檔案 → 連結 補上。
+
+## 第 0 步：打開流量統計（已完成）
+
+GoatCounter 代號 `ballduel`。發片前（10/27–11/03）的 5 筆 visits 都是測試，計算時扣掉。
 
 1. 到 https://www.goatcounter.com/signup 註冊免費帳號，**Code** 欄位填 `ballduel`（被用掉的話換一個，記下來）。不用 cookie、不收個資，不需要隱私同意視窗。
 2. 把 code 告訴我，我會幫你設定 GitHub repo 變數 `GOATCOUNTER_CODE` 並重新部署。
