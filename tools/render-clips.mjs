@@ -63,6 +63,10 @@ async function render([n, seed, weapons, winner, lang]) {
   // force the download path instead of the OS share sheet
   await page.addInitScript(() => Object.defineProperty(navigator, "canShare", { value: undefined }));
   await page.addInitScript(() => {
+    // Avoid the 30fps capture clock repeatedly missing variable-rate animation frames.
+    // Oversample native drawings, then select a constant 30fps during final encoding.
+    const capture = HTMLCanvasElement.prototype.captureStream;
+    HTMLCanvasElement.prototype.captureStream = function () { return capture.call(this, 60); };
     const OriginalRecorder = window.MediaRecorder;
     window.MediaRecorder = class extends OriginalRecorder {
       constructor(stream, options) {
@@ -79,6 +83,7 @@ async function render([n, seed, weapons, winner, lang]) {
   if (arcade) {
     await page.waitForFunction(() => document.querySelector("#stage")?.dataset.presentation === "arcadev3");
   }
+  const sourceScript = await page.locator('script[type="module"]').getAttribute("src");
   const canvas = await page.locator("#stage").evaluate((canvas) => {
     const width = canvas.width;
     const height = canvas.height;
@@ -100,6 +105,8 @@ async function render([n, seed, weapons, winner, lang]) {
   const probe = JSON.parse(execFileSync("ffprobe", ["-v", "error", "-show_streams", "-show_format", "-of", "json", raw], { encoding: "utf8" }));
   const video = probe.streams.find((s) => s.codec_type === "video");
   if (video?.width !== 1080 || video?.height !== 1920) throw new Error("Raw recording is not 1080x1920");
+  const [frames, seconds] = video.avg_frame_rate.split("/").map(Number);
+  if (frames / seconds < 27) throw new Error(`Raw capture is only ${(frames / seconds).toFixed(1)} fps; optimise before encoding`);
   // No spatial scaling: retain the native pixels through final encoding.
   const musicFile = join(OUT, "raw", `${name}-music.wav`);
   const music = shorts ? writeShortsMusic(musicFile, Number(probe.format.duration)) : undefined;
@@ -120,8 +127,8 @@ async function render([n, seed, weapons, winner, lang]) {
   }
   execFileSync("ffmpeg", ["-v", "error", "-xerror", "-i", output, "-f", "null", "-"], { stdio: ["ignore", "ignore", "pipe"] });
   writeFileSync(join(OUT, `${name}.json`), JSON.stringify({ seed, weapons, winner, lang, canvas,
-    variant, music,
-    requestedVideoBitsPerSecond: 16_000_000, raw, output, rawVideo: video, finalVideo, finalAudio,
+    variant, music, sourceScript, recordedAt: new Date().toISOString(),
+    requestedVideoBitsPerSecond: 16_000_000, captureFps: 60, raw, output, rawVideo: video, finalVideo, finalAudio,
     rawDuration: probe.format.duration, finalDuration: finalProbe.format.duration, errors }, null, 2));
   console.log(`done ${name}`);
 }

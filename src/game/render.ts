@@ -80,13 +80,13 @@ export class Renderer {
   }
 
   menu(sim: Sim): void {
-    this.draw(sim); this.scrim(.72); this.badge(tr().whoWins, 470, "#fff", 48);
+    this.draw(sim, false); this.scrim(.72); this.badge(tr().whoWins, 470, "#fff", 48);
     text(this.ctx, tr().vs.toUpperCase(), W / 2, 590, 58, "#c0ff79", "center", 100);
     sim.balls.forEach((b, i) => this.emblem(b, i ? 485 : 235, 570, 55));
   }
 
   intro(sim: Sim, t: number): void {
-    this.draw(sim); this.scrim(Math.max(0, .85 - t * .45));
+    this.draw(sim, false); this.scrim(Math.max(0, .85 - t * .45));
     const c = this.ctx;
     const enter = this.caption.reducedMotion ? 1 : 1 - (1 - Math.min(1, t / .45)) ** 3;
     sim.balls.forEach((b, i) => {
@@ -120,7 +120,7 @@ export class Renderer {
       W / 2, 835, 30, "#c0ff79", "center", FULL);
   }
 
-  draw(sim: Sim): void {
+  draw(sim: Sim, actors = true): void {
     this.observe(sim); this.background(sim); this.hud(sim);
     const c = this.ctx;
     c.save();
@@ -128,7 +128,7 @@ export class Renderer {
     c.translate(VIEW.x + Math.sin(this.clock * 73) * shake, VIEW.y + Math.cos(this.clock * 61) * shake);
     c.scale(VIEW.size / ARENA.w, VIEW.size / ARENA.h); c.translate(-ARENA.x, -ARENA.y);
     this.arena(sim);
-    for (const sh of sim.shots) {
+    for (const sh of actors ? sim.shots : []) {
       c.save(); c.shadowColor = sim.balls[sh.owner].color; c.shadowBlur = 12;
       if (sh.kind === "arrow") {
         const speed = Math.hypot(sh.vx, sh.vy); c.strokeStyle = "#f6f8ff"; c.lineWidth = 4;
@@ -136,7 +136,7 @@ export class Renderer {
       } else star(c, sh.x, sh.y, 13, sim.time * 18, "#eef6ff");
       c.restore();
     }
-    for (const b of sim.balls) if (!b.dead) this.ball(sim, b);
+    if (actors) for (const b of sim.balls) if (!b.dead) this.ball(sim, b);
     for (const r of this.rings) {
       c.globalAlpha = Math.min(.8, r.life * 1.5); c.strokeStyle = r.color; c.lineWidth = 2 + r.life * 4;
       c.beginPath(); c.arc(r.x, r.y, 8 + (1 - r.life) * r.size, 0, Math.PI * 2); c.stroke();
