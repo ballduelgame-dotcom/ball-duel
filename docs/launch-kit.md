@@ -197,6 +197,8 @@ GoatCounter 於 **11/05 01:41:46 +08:00** 擷取，官方後台時區核實為 A
 
 `event/`、`event` 及官方說明的 `is:event` 篩選仍回傳頁訪列，沒有取得可信的事件清單；開始、完成、存片、分享均維持未知，不當成 0。重玩沒有獨立事件，會再次記為 pick，無法從現有匯總分離。成功／停損門檻、Day1=11/04、Day7=11/10 及 YouTube 原片均不變。
 
+**01:51 官方匯出補證**：之後透過官方後台取得 JSON 匯出 27746（產生時間 UTC 11/04 17:51:20，即台北 11/05 01:51:20），ZIP 的 SHA256 與後台顯示一致：`520dab047ed5465819109949c0b2d6c35ac0c1d75d984ce3601564550d87a2eb`。依官方格式說明核對完整 `paths.jsonl` 與 `hit_stats.jsonl`，只有兩個頁訪路徑，沒有 `event:true` 路徑或事件統計列。因此現在可確認此匯出內**已記錄的事件為 0**；這不是由畫面篩選沒顯示事件推論，而是匯出資料的核對結果。是否有未送出／未記錄的實際操作、陌生玩家存片或分享仍未知，不能說真實玩家或操作數為 0。UTC 11/03 起的匯出合計 8 次，排除台北 11/04 前 5 次舊測試後，仍為上述 3 次來源未知的頁訪。沒有開啟個別頁訪收集、新增 API 權限或建立測試流量。本機證據：`clips/market-day2/goat-export-20261105.zip`、`goat-export-20261105-ready.json/jpg`、`goat-export-20261105-analysis.json`。
+
 本機證據：`clips/market-day2/goat-20261105-{raw,timezone,event-filter}.json`、`goat-20261105-dashboard.jpg`、`tiktok-20261105-{prepublish,published,playback,tail-paused,studio-final}.json`、`tiktok-20261105-platform-tail.jpg`、`tiktok-20261105-studio-final.jpg`。其中 published.json 是正式頁最初 403 時的快照；後續成功播放以 playback.json、tail-paused.json 與片尾實圖為準。
 
 ### 營收階段交接
