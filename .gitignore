@@ -25,3 +25,6 @@ dist-ssr
 
 # rendered videos
 clips/
+
+# shared agent memory (local only, may hold private info)
+.agents/

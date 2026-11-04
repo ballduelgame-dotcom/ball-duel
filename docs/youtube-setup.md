@@ -18,7 +18,7 @@
 5. 「目標對象」頁面 → 發布應用程式（Publish app / 正式版）。會提示未驗證，確認即可，不需要送審。
 6. 「用戶端」→ 建立用戶端 → 應用程式類型選「電腦版應用程式（Desktop app）」→ 名稱 ball-duel-cli → 建立。
 7. 下載用戶端的 JSON 檔，存成：
-   C:\Users\AutoDrinker\AppData\Roaming\ballduel\client_secret.json
+   %APPDATA%\ballduel\client_secret.json
    （資料夾不存在就建立；不要把檔案內容貼到聊天裡）
 完成後回報：專案 ID、API 是否已啟用、應用程式狀態（測試中／正式版）、JSON 是否已存到指定路徑。
 ```
