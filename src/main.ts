@@ -9,10 +9,11 @@ import { LANGS, lang, langName, setLang, t, weaponLabel, type Lang } from "./i18
 import { Sim, WEAPONS, WEAPON_KINDS, type Fighter, type SimEvent, type WeaponKind } from "./game/sim";
 
 const GAME = "Ball Duel";
+const SHORTS = new URLSearchParams(location.search).get("format") === "shorts";
 const LAUNCH = "2026-11-02";
 const COLORS = ["#ff5d73", "#4dabff", "#ffd34d", "#7dffa1", "#c792ff", "#ff9f43"];
 const INTRO = 1.2; // short: Shorts/TikTok viewers decide in the first second
-const OUTRO = 3.2;
+const OUTRO = SHORTS ? 2 : 3.2;
 const KO_HOLD = 0.9;
 const STEP = 1 / 120;
 
@@ -20,6 +21,7 @@ interface Match { seed: number; fighters: Fighter[]; daily: boolean }
 interface Stats { days: Record<string, { pick: WeaponKind; won: boolean }> }
 
 const canvas = document.querySelector<HTMLCanvasElement>("#stage")!;
+canvas.dataset.format = SHORTS ? "shorts" : "game";
 canvas.width = W;
 canvas.height = H;
 const ctx = canvas.getContext("2d")!;
@@ -96,7 +98,7 @@ const stats = load<Stats>("ballduel.stats", { days: {} });
 type Phase = "menu" | "intro" | "fight" | "outro" | "done";
 let phase: Phase = "menu";
 let sim = new Sim(ARENA, match.fighters, match.seed);
-let renderer = new Renderer(ctx, { title: () => matchTitle(match), url: shortUrl });
+let renderer = new Renderer(ctx, { title: () => matchTitle(match), url: shortUrl, shorts: SHORTS });
 let pick: number | null = null;
 let phaseTime = 0;
 let koAt: number | null = null;
@@ -107,7 +109,7 @@ let clip: Blob | null = null;
 
 function freshSim(): void {
   sim = new Sim(ARENA, match.fighters, match.seed);
-  renderer = new Renderer(ctx, { title: () => matchTitle(match), url: shortUrl });
+  renderer = new Renderer(ctx, { title: () => matchTitle(match), url: shortUrl, shorts: SHORTS });
 }
 
 function setPhase(p: Phase): void {

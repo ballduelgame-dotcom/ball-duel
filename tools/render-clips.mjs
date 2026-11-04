@@ -4,6 +4,7 @@
 //
 //   node tools/render-clips.mjs                 # all duels, en + zh-TW
 //   node tools/render-clips.mjs 1 en            # one duel, one language
+//   node tools/render-clips.mjs 2 en --shorts   # uncluttered safe-area layout + original music
 //
 // Needs Google Chrome (H.264 recording) and ffmpeg on PATH. Plays the live site so the end card
 // shows the real URL; GoatCounter is blocked so renders don't count as visits.
@@ -12,6 +13,7 @@ import { execFileSync } from "node:child_process";
 import { existsSync, mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { chromium } from "playwright-core";
+import { writeShortsMusic } from "./shorts-music.mjs";
 
 const SITE = "https://ballduelgame-dotcom.github.io/ball-duel/";
 const OUT = "clips";
@@ -30,7 +32,10 @@ export const DUELS = [
   [1249, "shield,shuriken", "shield"],
 ];
 
-const [onlyNum, onlyLang] = process.argv.slice(2);
+const args = process.argv.slice(2);
+const [onlyNum, onlyLang] = args.filter((a) => !a.startsWith("--"));
+const shorts = args.includes("--shorts");
+const variant = shorts ? "shortsv2" : "native1080";
 const langs = onlyLang ? [onlyLang] : ["en", "zh-TW"];
 const jobs = DUELS.map((d, i) => [i + 1, ...d])
   .filter(([n]) => !onlyNum || n === Number(onlyNum))
@@ -43,7 +48,7 @@ const browser = await chromium.launch({
 });
 
 async function render([n, seed, weapons, winner, lang]) {
-  const name = `${String(n).padStart(2, "0")}-${weapons.replace(",", "-vs-")}-native1080-${lang}`;
+  const name = `${String(n).padStart(2, "0")}-${weapons.replace(",", "-vs-")}-${variant}-${lang}`;
   const output = join(OUT, `${name}.mp4`);
   if (existsSync(output)) throw new Error(`${output} already exists; archive it before re-rendering`);
   const page = await browser.newPage({ viewport: { width: 540, height: 960 }, acceptDownloads: true });
@@ -65,7 +70,10 @@ async function render([n, seed, weapons, winner, lang]) {
       }
     };
   });
-  await page.goto(`${SITE}?seed=${seed}&w=${weapons}&lang=${lang}`);
+  await page.goto(`${SITE}?seed=${seed}&w=${weapons}&lang=${lang}${shorts ? "&format=shorts" : ""}`);
+  if (shorts) {
+    await page.waitForFunction(() => document.querySelector("#stage")?.dataset.format === "shorts");
+  }
   const canvas = await page.locator("#stage").evaluate((canvas) => {
     const width = canvas.width;
     const height = canvas.height;
@@ -88,7 +96,12 @@ async function render([n, seed, weapons, winner, lang]) {
   const video = probe.streams.find((s) => s.codec_type === "video");
   if (video?.width !== 1080 || video?.height !== 1920) throw new Error("Raw recording is not 1080x1920");
   // No spatial scaling: retain the native pixels through final encoding.
+  const musicFile = join(OUT, "raw", `${name}-music.wav`);
+  const music = shorts ? writeShortsMusic(musicFile, Number(probe.format.duration)) : undefined;
   execFileSync("ffmpeg", ["-y", "-loglevel", "error", "-i", raw,
+    ...(shorts ? ["-i", musicFile, "-filter_complex",
+      "[0:a]volume=1[fx];[1:a]volume=0.75[bgm];[fx][bgm]amix=inputs=2:duration=first:normalize=0,loudnorm=I=-16:TP=-1.5:LRA=9[audio]",
+      "-map", "0:v:0", "-map", "[audio]"] : []),
     "-vf", "fps=30", "-c:v", "libx264", "-preset", "slow", "-crf", "16",
     "-pix_fmt", "yuv420p", "-c:a", "aac", "-b:a", "192k", "-ar", "48000", "-movflags", "+faststart",
     output]);
@@ -102,6 +115,7 @@ async function render([n, seed, weapons, winner, lang]) {
   }
   execFileSync("ffmpeg", ["-v", "error", "-xerror", "-i", output, "-f", "null", "-"], { stdio: ["ignore", "ignore", "pipe"] });
   writeFileSync(join(OUT, `${name}.json`), JSON.stringify({ seed, weapons, winner, lang, canvas,
+    variant, music,
     requestedVideoBitsPerSecond: 16_000_000, raw, output, rawVideo: video, finalVideo, finalAudio,
     rawDuration: probe.format.duration, finalDuration: finalProbe.format.duration, errors }, null, 2));
   console.log(`done ${name}`);

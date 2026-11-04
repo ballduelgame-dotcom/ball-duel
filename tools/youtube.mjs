@@ -9,6 +9,7 @@
 //   node tools/youtube.mjs upload 02 --at 2026-11-05T20:00+08:00   # scheduled (also needs the audit)
 //   node tools/youtube.mjs upload 02 --dry-run      # show what would be sent, no network
 //   node tools/youtube.mjs upload 02 --variant native1080  # a separate upload; keeps the original
+//   node tools/youtube.mjs upload 02 --variant shortsv2     # safe-area layout with original music
 //   node tools/youtube.mjs stats                    # views / likes / comments of everything uploaded
 //
 // Credentials live outside the repo in %APPDATA%\ballduel (or ~/.config/ballduel):
@@ -243,7 +244,7 @@ else if (cmd === "upload") {
   if (!nums.length) die("which clips? e.g. node tools/youtube.mjs upload 02 08");
   const at = opt("at");
   const variant = opt("variant");
-  if (flag("variant") && variant !== "native1080") die("--variant must be native1080");
+  if (flag("variant") && !["native1080", "shortsv2"].includes(variant)) die("--variant must be native1080 or shortsv2");
   if (at && Number.isNaN(Date.parse(at))) die(`bad --at time: ${at}`);
   await upload(nums, { lang: opt("lang") ?? "en", variant, privacy: flag("public") ? "public" : "private", at, dryRun: flag("dry-run") });
 } else if (cmd === "stats") await stats();

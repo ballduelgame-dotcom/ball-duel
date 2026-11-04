@@ -64,6 +64,22 @@ node tools/youtube.mjs stats
 `--variant native1080` 只選新版檔案，建立獨立上傳紀錄，不會刪除或覆蓋舊影片；不帶此參數仍只選原版。
 `stats` 同時列出隱私、處理狀態與 YouTube 回報的來源尺寸；來源尺寸不代表所有播放畫質版本都已處理完成。
 
+## 手機 Shorts 精簡預覽
+
+```bash
+node tools/render-clips.mjs 2 en --shorts
+node tools/render-clips.mjs 8 en --shorts
+```
+
+此模式使用線上頁面的 `?format=shorts`：隱藏畫面標題、等級、成長說明與網址，把武器名、血條和戰鬥畫面收進手機平台介面的安全範圍。
+遊戲座標、武器數值和 seed 不變；一般遊戲頁面維持原來的資訊。所有畫面文字沿用現有十語系字串。
+
+成片另存為 `*-shortsv2-en.mp4`，混入原創合成配樂 Duel Pulse v1（132 BPM、A minor），包含鼓、低音、琶音及結尾和弦，無第三方音檔或樣本。
+音效與配樂混音後以 -16 LUFS / -1.5 dBTP 為正規化目標；實測音量應在上傳前另外檢查。音樂來源和影片規格寫入相鄰 JSON，原始 WAV 留在 `clips/raw/`。
+網址仍在上傳說明；第一則留言或置頂需使用者另行授權。產生預覽不會上傳，也不會更改已公開影片。
+
+獲准上傳新版時，使用 `node tools/youtube.mjs upload 02 08 --variant shortsv2 --dry-run` 預覽資料，再移除 `--dry-run`；新版會有獨立的上傳紀錄。
+
 ## 限制：上傳後要手動改「公開」
 
 Google 規定：未經稽核的 API 專案上傳的影片會被**鎖成私人**。所以第一週的流程是：

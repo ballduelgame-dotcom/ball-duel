@@ -14,6 +14,7 @@ interface Spark { x: number; y: number; vx: number; vy: number; life: number; co
 export interface Caption {
   title: () => string; // e.g. "Ball Duel #12"; re-read every frame so a language switch applies
   url: string;
+  shorts?: boolean;
 }
 
 export class Renderer {
@@ -63,6 +64,12 @@ export class Renderer {
     this.background();
     this.hud(sim);
     c.save();
+    if (this.caption.shorts) {
+      // Keep the physics arena intact; map only its drawing into the Shorts safe area.
+      c.translate(40, 330);
+      c.scale(560 / ARENA.w, 560 / ARENA.h);
+      c.translate(-ARENA.x, -ARENA.y);
+    }
     if (this.shake > 0) c.translate((Math.random() - 0.5) * this.shake, (Math.random() - 0.5) * this.shake);
     this.arena(sim);
     for (const sh of sim.shots) {
@@ -99,6 +106,13 @@ export class Renderer {
   intro(sim: Sim, t: number): void {
     this.draw(sim);
     const c = this.ctx;
+    if (this.caption.shorts) {
+      c.fillStyle = `rgba(10,10,20,${0.7 * Math.min(1, 1.6 - t)})`;
+      c.fillRect(28, 310, 584, 600);
+      text(c, tr().whoWins, 320, 555, 76, "#fff", "center", true, 530);
+      text(c, tr().commentPick, 320, 655, 30, "#ddd", "center", true, 500);
+      return;
+    }
     c.fillStyle = `rgba(10,10,20,${0.75 * Math.min(1, 1.6 - t)})`;
     c.fillRect(0, 0, W, H);
     const [a, b] = sim.balls;
@@ -116,6 +130,16 @@ export class Renderer {
   outro(sim: Sim, pickedId: number | null, t: number): void {
     this.draw(sim);
     const c = this.ctx;
+    if (this.caption.shorts) {
+      c.fillStyle = `rgba(10,10,20,${Math.min(0.88, t * 2)})`;
+      c.fillRect(28, 310, 584, 600);
+      const winner = sim.winner;
+      text(c, winner ? "🏆" : "—", 320, 490, 80, "#fff", "center");
+      text(c, winner ? tr().wins(weaponLabel(winner.weapon.def.kind)) : tr().draw,
+        320, 610, 64, winner?.color ?? "#fff", "center", true, 520);
+      if (winner) text(c, `♥ ${Math.ceil(winner.hp)}`, 320, 700, 48, "#fff", "center", true);
+      return;
+    }
     c.fillStyle = `rgba(10,10,20,${Math.min(0.8, t * 2)})`;
     c.fillRect(0, 0, W, H);
     const w = sim.winner;
@@ -145,6 +169,21 @@ export class Renderer {
 
   private hud(sim: Sim): void {
     const c = this.ctx;
+    if (this.caption.shorts) {
+      sim.balls.forEach((b, i) => {
+        const x = 40 + i * 300;
+        text(c, `${b.weapon.def.emoji} ${weaponLabel(b.weapon.def.kind)}`, x, 210, 33, b.color, "left", true, 260);
+        c.fillStyle = "#2a2540";
+        roundRect(c, x, 236, 260, 16, 8);
+        c.fill();
+        if (b.hp > 0) {
+          c.fillStyle = b.color;
+          roundRect(c, x, 236, Math.max(1, 260 * b.hp / b.maxHp), 16, 8);
+          c.fill();
+        }
+      });
+      return;
+    }
     text(c, this.caption.title(), W / 2, 70, 40, "#fff", "center", true, FULL);
     const n = sim.balls.length;
     const bw = (W - 80 - (n - 1) * 20) / n;
@@ -231,6 +270,10 @@ export class Renderer {
 
   private footer(sim: Sim): void {
     const c = this.ctx;
+    if (this.caption.shorts) {
+      text(c, `${Math.floor(sim.time)}s`, 320, 300, 26, "#9c96b1", "center");
+      return;
+    }
     const secs = Math.floor(sim.time);
     text(c, `${secs}s`, W / 2, 1030, 32, "#888", "center");
     text(c, this.caption.url, W / 2, 1200, 34, "#9f8cff", "center", true, FULL);
