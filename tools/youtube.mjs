@@ -202,7 +202,7 @@ async function upload(nums, { lang, variant, privacy, at, dryRun }) {
   }
 }
 
-async function stats() {
+async function stats({ json = false } = {}) {
   const log = readJson(LOG, {});
   const ids = Object.values(log).map((v) => v.id);
   const token = await accessToken();
@@ -220,14 +220,23 @@ async function stats() {
     const v = byId[u.id];
     const s = v?.statistics ?? {};
     const source = v?.fileDetails?.videoStreams?.[0];
-    return { file, privacy: v?.status?.privacyStatus ?? "gone", views: +(s.viewCount ?? 0),
+    return { file, id: u.id, privacy: v?.status?.privacyStatus ?? "unavailable", views: s.viewCount === undefined ? null : +s.viewCount,
       processing: v?.processingDetails?.processingStatus ?? "unknown",
       source: source ? `${source.widthPixels}x${source.heightPixels}` : "unknown",
-      likes: +(s.likeCount ?? 0), comments: +(s.commentCount ?? 0), url: `https://youtube.com/shorts/${u.id}` };
+      likes: s.likeCount === undefined ? null : +s.likeCount,
+      comments: s.commentCount === undefined ? null : +s.commentCount, url: `https://youtube.com/shorts/${u.id}` };
   });
+  const snapshot = { capturedAt: new Date().toISOString(), source: "YouTube Data API v3", rows,
+    limitations: ["Counts may include developer/test views; unique external viewers are unknown.",
+      "This snapshot is not a 24h/72h measurement unless captured at that checkpoint.",
+      "Missing metrics are null, not zero; retention and website attribution are not measured."] };
+  mkdirSync(CLIPS, { recursive: true });
+  const snapshotFile = join(CLIPS, `youtube-stats-${snapshot.capturedAt.replace(/[:.]/g, "-")}.json`);
+  writeFileSync(snapshotFile, JSON.stringify(snapshot, null, 2));
+  if (json) { console.log(JSON.stringify({ ...snapshot, snapshotFile }, null, 2)); return; }
   console.table(rows);
-  const best = Math.max(...rows.map((r) => r.views));
-  console.log(`best clip: ${best} views (stop-loss line is 10,000 within 7 days)`);
+  console.log(`snapshot: ${snapshotFile}`);
+  console.log("Evaluate the full 7-day criteria in docs/launch-kit.md; this snapshot alone does not decide stop-loss.");
 }
 
 // ---------- cli ----------
@@ -248,5 +257,5 @@ else if (cmd === "upload") {
   if (flag("variant") && !["native1080", "shortsv2", "arcadev3"].includes(variant)) die("--variant must be native1080, shortsv2 or arcadev3");
   if (at && Number.isNaN(Date.parse(at))) die(`bad --at time: ${at}`);
   await upload(nums, { lang: opt("lang") ?? "en", variant, privacy: flag("public") ? "public" : "private", at, dryRun: flag("dry-run") });
-} else if (cmd === "stats") await stats();
+} else if (cmd === "stats") await stats({ json: flag("json") });
 else die(readFileSync(new URL(import.meta.url), "utf8").split("\n").filter((l) => l.startsWith("//")).slice(0, 13).join("\n"));
