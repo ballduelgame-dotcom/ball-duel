@@ -11,6 +11,10 @@ export interface Dict {
   whoWins: string;
   vs: string;
   commentPick: string;
+  fight: string;
+  clutch: string;
+  leadChange: string;
+  knockout: string;
   wins: (weapon: string) => string;
   hpLeft: (hp: number, level: number) => string;
   draw: string;
@@ -42,6 +46,7 @@ const ok = (b: boolean) => (b ? "✅" : "❌");
 const DICTS = {
   "zh-TW": {
     name: "繁體中文", htmlLang: "zh-Hant", random: "隨機",
+    fight: "開戰！", clutch: "絕境求生", leadChange: "反超了！", knockout: "擊倒！",
     whoWins: "誰會贏？", vs: "vs", commentPick: "留言你押誰 👇",
     wins: (w) => `${w} 獲勝`, hpLeft: (hp, lv) => `剩 ${hp} HP · 等級 ${lv}`, draw: "平手",
     myPick: (b) => (b ? "我押中了 ✅" : "沒押中 ❌"), playToday: "來玩今天的對決 ↓",
@@ -61,6 +66,7 @@ const DICTS = {
   },
   "zh-CN": {
     name: "简体中文", htmlLang: "zh-Hans", random: "随机",
+    fight: "开战！", clutch: "绝境求生", leadChange: "反超了！", knockout: "击倒！",
     whoWins: "谁会赢？", vs: "vs", commentPick: "评论你押谁 👇",
     wins: (w) => `${w} 获胜`, hpLeft: (hp, lv) => `剩 ${hp} HP · 等级 ${lv}`, draw: "平局",
     myPick: (b) => (b ? "我押中了 ✅" : "没押中 ❌"), playToday: "来玩今天的对决 ↓",
@@ -80,6 +86,7 @@ const DICTS = {
   },
   en: {
     name: "English", htmlLang: "en", random: "Random",
+    fight: "FIGHT!", clutch: "ON THE EDGE", leadChange: "LEAD CHANGE!", knockout: "K.O.!",
     whoWins: "WHO WINS?", vs: "vs", commentPick: "comment your pick 👇",
     wins: (w) => `${w.toUpperCase()} WINS`, hpLeft: (hp, lv) => `${hp} HP left · level ${lv}`, draw: "DRAW",
     myPick: (b) => `My pick ${ok(b)}`, playToday: "play today's duel ↓",
@@ -99,6 +106,7 @@ const DICTS = {
   },
   ja: {
     name: "日本語", htmlLang: "ja", random: "ランダム",
+    fight: "開始！", clutch: "絶体絶命", leadChange: "逆転！", knockout: "K.O.!",
     whoWins: "どっちが勝つ？", vs: "vs", commentPick: "コメントで予想してね 👇",
     wins: (w) => `${w}の勝ち！`, hpLeft: (hp, lv) => `残りHP ${hp} · Lv ${lv}`, draw: "引き分け",
     myPick: (b) => (b ? "予想的中 ✅" : "予想ハズレ ❌"), playToday: "今日の対決をプレイ ↓",
@@ -118,6 +126,7 @@ const DICTS = {
   },
   ko: {
     name: "한국어", htmlLang: "ko", random: "랜덤",
+    fight: "시작!", clutch: "절체절명", leadChange: "역전!", knockout: "K.O.!",
     whoWins: "누가 이길까?", vs: "vs", commentPick: "댓글로 예측해 줘 👇",
     wins: (w) => `${w} 승리!`, hpLeft: (hp, lv) => `남은 HP ${hp} · Lv ${lv}`, draw: "무승부",
     myPick: (b) => (b ? "예측 성공 ✅" : "예측 실패 ❌"), playToday: "오늘의 대결 하러 가기 ↓",
@@ -137,6 +146,7 @@ const DICTS = {
   },
   es: {
     name: "Español", htmlLang: "es", random: "Aleatorio",
+    fight: "¡A LUCHAR!", clutch: "AL LÍMITE", leadChange: "¡CAMBIA EL LÍDER!", knockout: "¡K.O.!",
     whoWins: "¿QUIÉN GANA?", vs: "vs", commentPick: "comenta tu elección 👇",
     wins: (w) => `¡GANA ${w.toUpperCase()}!`, hpLeft: (hp, lv) => `Quedan ${hp} PV · nivel ${lv}`, draw: "EMPATE",
     myPick: (b) => `Mi elección ${ok(b)}`, playToday: "juega el duelo de hoy ↓",
@@ -156,6 +166,7 @@ const DICTS = {
   },
   pt: {
     name: "Português", htmlLang: "pt-BR", random: "Aleatório",
+    fight: "LUTEM!", clutch: "POR UM FIO", leadChange: "VIRADA!", knockout: "Nocaute!",
     whoWins: "QUEM VENCE?", vs: "vs", commentPick: "comente seu palpite 👇",
     wins: (w) => `${w.toUpperCase()} VENCE`, hpLeft: (hp, lv) => `${hp} de vida · nível ${lv}`, draw: "EMPATE",
     myPick: (b) => `Meu palpite ${ok(b)}`, playToday: "jogue o duelo de hoje ↓",
@@ -175,6 +186,7 @@ const DICTS = {
   },
   fr: {
     name: "Français", htmlLang: "fr", random: "Aléatoire",
+    fight: "COMBAT !", clutch: "SUR LE FIL", leadChange: "RENVERSEMENT !", knockout: "K.O. !",
     whoWins: "QUI VA GAGNER ?", vs: "vs", commentPick: "commente ton choix 👇",
     wins: (w) => `${w.toUpperCase()} GAGNE`, hpLeft: (hp, lv) => `${hp} PV restants · niveau ${lv}`, draw: "ÉGALITÉ",
     myPick: (b) => `Mon choix ${ok(b)}`, playToday: "joue au duel du jour ↓",
@@ -194,6 +206,7 @@ const DICTS = {
   },
   de: {
     name: "Deutsch", htmlLang: "de", random: "Zufall",
+    fight: "KAMPF!", clutch: "AUF MESSERS SCHNEIDE", leadChange: "FÜHRUNGSWECHSEL!", knockout: "K.O.!",
     whoWins: "WER GEWINNT?", vs: "vs", commentPick: "tippe in den Kommentaren 👇",
     wins: (w) => `${w.toUpperCase()} GEWINNT`, hpLeft: (hp, lv) => `${hp} LP übrig · Stufe ${lv}`, draw: "UNENTSCHIEDEN",
     myPick: (b) => `Mein Tipp ${ok(b)}`, playToday: "spiel das Duell des Tages ↓",
@@ -213,6 +226,7 @@ const DICTS = {
   },
   id: {
     name: "Bahasa Indonesia", htmlLang: "id", random: "Acak",
+    fight: "MULAI!", clutch: "DI UJUNG TANDUK", leadChange: "BERBALIK UNGGUL!", knockout: "K.O.!",
     whoWins: "SIAPA MENANG?", vs: "vs", commentPick: "tulis tebakanmu di komentar 👇",
     wins: (w) => `${w.toUpperCase()} MENANG`, hpLeft: (hp, lv) => `Sisa ${hp} HP · level ${lv}`, draw: "SERI",
     myPick: (b) => `Tebakanku ${ok(b)}`, playToday: "main duel hari ini ↓",

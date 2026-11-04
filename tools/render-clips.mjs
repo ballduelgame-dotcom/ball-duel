@@ -5,6 +5,7 @@
 //   node tools/render-clips.mjs                 # all duels, en + zh-TW
 //   node tools/render-clips.mjs 1 en            # one duel, one language
 //   node tools/render-clips.mjs 2 en --shorts   # uncluttered safe-area layout + original music
+//   node tools/render-clips.mjs 2 en --arcade   # centred cinematic arena, effects and edited pacing
 //
 // Needs Google Chrome (H.264 recording) and ffmpeg on PATH. Plays the live site so the end card
 // shows the real URL; GoatCounter is blocked so renders don't count as visits.
@@ -34,8 +35,9 @@ export const DUELS = [
 
 const args = process.argv.slice(2);
 const [onlyNum, onlyLang] = args.filter((a) => !a.startsWith("--"));
-const shorts = args.includes("--shorts");
-const variant = shorts ? "shortsv2" : "native1080";
+const arcade = args.includes("--arcade");
+const shorts = arcade || args.includes("--shorts");
+const variant = arcade ? "arcadev3" : shorts ? "shortsv2" : "native1080";
 const langs = onlyLang ? [onlyLang] : ["en", "zh-TW"];
 const jobs = DUELS.map((d, i) => [i + 1, ...d])
   .filter(([n]) => !onlyNum || n === Number(onlyNum))
@@ -74,6 +76,9 @@ async function render([n, seed, weapons, winner, lang]) {
   if (shorts) {
     await page.waitForFunction(() => document.querySelector("#stage")?.dataset.format === "shorts");
   }
+  if (arcade) {
+    await page.waitForFunction(() => document.querySelector("#stage")?.dataset.presentation === "arcadev3");
+  }
   const canvas = await page.locator("#stage").evaluate((canvas) => {
     const width = canvas.width;
     const height = canvas.height;
@@ -100,7 +105,7 @@ async function render([n, seed, weapons, winner, lang]) {
   const music = shorts ? writeShortsMusic(musicFile, Number(probe.format.duration)) : undefined;
   execFileSync("ffmpeg", ["-y", "-loglevel", "error", "-i", raw,
     ...(shorts ? ["-i", musicFile, "-filter_complex",
-      "[0:a]volume=1[fx];[1:a]volume=0.75[bgm];[fx][bgm]amix=inputs=2:duration=first:normalize=0,loudnorm=I=-16:TP=-3:LRA=9[audio]",
+      "[0:a]volume=1[fx];[1:a]volume=0.75[bgm];[fx][bgm]amix=inputs=2:duration=first:normalize=0,loudnorm=I=-16:TP=-4:LRA=9[audio]",
       "-map", "0:v:0", "-map", "[audio]"] : []),
     "-vf", "fps=30", "-c:v", "libx264", "-preset", "slow", "-crf", "16",
     "-pix_fmt", "yuv420p", "-c:a", "aac", "-b:a", "192k", "-ar", "48000", "-movflags", "+faststart",

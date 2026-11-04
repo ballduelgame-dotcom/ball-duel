@@ -10,6 +10,8 @@ export class Sfx {
   private noiseBuf?: AudioBuffer;
   private lastBounce = 0;
   private _muted = false;
+  private musicBus?: GainNode;
+  private musicTimer?: number;
 
   get muted(): boolean {
     return this._muted;
@@ -31,6 +33,9 @@ export class Sfx {
       this.ctx = ctx;
       this.bus = ctx.createGain();
       this.bus.gain.value = 0.6;
+      this.musicBus = ctx.createGain();
+      this.musicBus.gain.value = 0;
+      this.musicBus.connect(this.bus);
       this.speakers = ctx.createGain();
       this.speakers.gain.value = this._muted ? 0 : 1;
       this.stream = ctx.createMediaStreamDestination();
@@ -55,6 +60,42 @@ export class Sfx {
     const v = Math.min(1, 0.35 + damage / 30);
     this.noise(0.09, 1800, v * 0.8, "bandpass");
     this.tone("sine", 160, 55, 0.14, v);
+  }
+
+  startMusic(): void {
+    this.stopMusic();
+    const ctx = this.ctx, output = this.musicBus;
+    if (!ctx || !output) return;
+    output.gain.cancelScheduledValues(ctx.currentTime);
+    output.gain.setTargetAtTime(.32, ctx.currentTime, .08);
+    let next = ctx.currentTime + .03, beat = 0;
+    const schedule = () => {
+      while (next < ctx.currentTime + .22) {
+        const delay = Math.max(0, next - ctx.currentTime);
+        const chord = Math.floor(beat / 8) % 4;
+        const roots = [110, 87.31, 130.81, 98];
+        const notes = [[440, 523.25, 659.25, 783.99], [349.23, 440, 523.25, 659.25],
+          [392, 523.25, 659.25, 783.99], [392, 493.88, 587.33, 783.99]];
+        this.tone("sine", 150, 45, .2, .58, delay, output);
+        this.noise(.04, 6500, .06, "highpass", delay + .227, output);
+        if (beat % 2) this.noise(.1, 1900, .18, "bandpass", delay, output);
+        this.tone("triangle", roots[chord], roots[chord], .18, .26, delay + .227, output);
+        if (beat >= 8) this.tone("triangle", notes[chord][beat % 4], notes[chord][beat % 4], .18, .12, delay, output);
+        next += 60 / 132;
+        beat++;
+      }
+    };
+    schedule();
+    this.musicTimer = window.setInterval(schedule, 90);
+  }
+
+  stopMusic(): void {
+    if (this.musicTimer !== undefined) window.clearInterval(this.musicTimer);
+    this.musicTimer = undefined;
+    if (this.ctx && this.musicBus) {
+      this.musicBus.gain.cancelScheduledValues(this.ctx.currentTime);
+      this.musicBus.gain.setTargetAtTime(0, this.ctx.currentTime, .06);
+    }
   }
 
   parry(): void {
@@ -102,9 +143,9 @@ export class Sfx {
     [523, 659, 784, 1047].forEach((f, i) => this.tone("triangle", f, f, 0.22, 0.4, i * 0.11));
   }
 
-  private tone(type: OscillatorType, from: number, to: number, dur: number, vol: number, delay = 0): void {
+  private tone(type: OscillatorType, from: number, to: number, dur: number, vol: number, delay = 0, output = this.bus): void {
     const ctx = this.ctx;
-    if (!ctx || !this.bus) return;
+    if (!ctx || !output) return;
     const t = ctx.currentTime + delay;
     const o = ctx.createOscillator();
     const g = ctx.createGain();
@@ -113,14 +154,15 @@ export class Sfx {
     o.frequency.exponentialRampToValueAtTime(Math.max(1, to), t + dur);
     g.gain.setValueAtTime(vol, t);
     g.gain.exponentialRampToValueAtTime(0.001, t + dur);
-    o.connect(g).connect(this.bus);
+    o.connect(g).connect(output);
+    o.onended = () => { o.disconnect(); g.disconnect(); };
     o.start(t);
     o.stop(t + dur + 0.02);
   }
 
-  private noise(dur: number, freq: number, vol: number, filter: BiquadFilterType, delay = 0): void {
+  private noise(dur: number, freq: number, vol: number, filter: BiquadFilterType, delay = 0, output = this.bus): void {
     const ctx = this.ctx;
-    if (!ctx || !this.bus || !this.noiseBuf) return;
+    if (!ctx || !output || !this.noiseBuf) return;
     const t = ctx.currentTime + delay;
     const src = ctx.createBufferSource();
     src.buffer = this.noiseBuf;
@@ -130,7 +172,8 @@ export class Sfx {
     const g = ctx.createGain();
     g.gain.setValueAtTime(vol, t);
     g.gain.exponentialRampToValueAtTime(0.001, t + dur);
-    src.connect(f).connect(g).connect(this.bus);
+    src.connect(f).connect(g).connect(output);
+    src.onended = () => { src.disconnect(); f.disconnect(); g.disconnect(); };
     src.start(t, Math.random() * 0.5);
     src.stop(t + dur + 0.02);
   }

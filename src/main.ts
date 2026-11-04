@@ -2,14 +2,16 @@ import "./style.css";
 import { dayKey, dayNumber, hashString, rng } from "./core/daily";
 import { ClipRecorder, shareOrDownload } from "./core/recorder";
 import { Sfx } from "./core/sfx";
+import { playbackRate } from "./core/presentation";
 import { load, save, shareText } from "./core/share";
 import { initTracking, track } from "./core/track";
 import { ARENA, H, Renderer, W } from "./game/render";
-import { LANGS, lang, langName, setLang, t, weaponLabel, type Lang } from "./i18n";
+import { LANGS, lang, langName, setLang, t, weaponGrow, weaponLabel, type Lang } from "./i18n";
 import { Sim, WEAPONS, WEAPON_KINDS, type Fighter, type SimEvent, type WeaponKind } from "./game/sim";
 
 const GAME = "Ball Duel";
 const SHORTS = new URLSearchParams(location.search).get("format") === "shorts";
+const REDUCED_MOTION = matchMedia("(prefers-reduced-motion: reduce)").matches;
 const LAUNCH = "2026-11-02";
 const COLORS = ["#ff5d73", "#4dabff", "#ffd34d", "#7dffa1", "#c792ff", "#ff9f43"];
 const INTRO = 1.2; // short: Shorts/TikTok viewers decide in the first second
@@ -22,6 +24,7 @@ interface Stats { days: Record<string, { pick: WeaponKind; won: boolean }> }
 
 const canvas = document.querySelector<HTMLCanvasElement>("#stage")!;
 canvas.dataset.format = SHORTS ? "shorts" : "game";
+canvas.dataset.presentation = "arcadev3";
 canvas.width = W;
 canvas.height = H;
 const ctx = canvas.getContext("2d")!;
@@ -98,7 +101,7 @@ const stats = load<Stats>("ballduel.stats", { days: {} });
 type Phase = "menu" | "intro" | "fight" | "outro" | "done";
 let phase: Phase = "menu";
 let sim = new Sim(ARENA, match.fighters, match.seed);
-let renderer = new Renderer(ctx, { title: () => matchTitle(match), url: shortUrl, shorts: SHORTS });
+let renderer = new Renderer(ctx, { title: () => matchTitle(match), url: shortUrl, shorts: SHORTS, reducedMotion: REDUCED_MOTION });
 let pick: number | null = null;
 let phaseTime = 0;
 let koAt: number | null = null;
@@ -109,11 +112,12 @@ let clip: Blob | null = null;
 
 function freshSim(): void {
   sim = new Sim(ARENA, match.fighters, match.seed);
-  renderer = new Renderer(ctx, { title: () => matchTitle(match), url: shortUrl, shorts: SHORTS });
+  renderer = new Renderer(ctx, { title: () => matchTitle(match), url: shortUrl, shorts: SHORTS, reducedMotion: REDUCED_MOTION });
 }
 
 function setPhase(p: Phase): void {
   phase = p;
+  document.body.dataset.phase = p;
   phaseTime = 0;
   koAt = null;
   acc = 0;
@@ -125,12 +129,15 @@ function frame(now: number): void {
   phaseTime += dt;
 
   if (phase === "menu") {
-    renderer.intro(sim, 1);
+    renderer.update(dt);
+    renderer.menu(sim);
   } else if (phase === "intro") {
+    renderer.update(dt);
     renderer.intro(sim, phaseTime);
-    if (phaseTime >= INTRO) setPhase("fight");
+    if (phaseTime >= INTRO) { setPhase("fight"); renderer.begin(); }
   } else if (phase === "fight") {
-    acc += dt;
+    // Speed up distant downtime only in the edited clip. Every physics step remains 1/120s.
+    acc += dt * playbackRate(sim, SHORTS);
     while (acc >= STEP) {
       sim.step(STEP);
       acc -= STEP;
@@ -176,8 +183,10 @@ function start(pickId: number): void {
   clip = null;
   suddenDeathAnnounced = false;
   freshSim();
+  renderer.select(pickId);
   panel.hidden = true;
   sfx.unlock();
+  if (!SHORTS) sfx.startMusic();
   recorder.start(sfx.track);
   setPhase("intro");
   sfx.intro();
@@ -186,6 +195,8 @@ function start(pickId: number): void {
 
 async function finish(): Promise<void> {
   phase = "done";
+  document.body.dataset.phase = "done";
+  sfx.stopMusic();
   clip = await recorder.stop();
   const won = sim.winner?.id === pick;
   if (match.daily && pick !== null && !stats.days[dayKey()]) {
@@ -197,6 +208,7 @@ async function finish(): Promise<void> {
 }
 
 function reset(m: Match): void {
+  sfx.stopMusic();
   match = m;
   pick = null;
   clip = null;
@@ -230,10 +242,16 @@ function row(...children: HTMLElement[]): HTMLDivElement {
 }
 
 function showMenu(): void {
+  document.body.dataset.phase = "menu";
   panel.replaceChildren(
+    el("p", "eyebrow", match.daily ? t().todaysDuel : t().vs),
     el("p", "lead", match.daily ? t().todayPrompt : t().pickPrompt),
-    row(...match.fighters.map((f, i) =>
-      btn(`${WEAPONS[f.kind].emoji} ${weaponLabel(f.kind)}`, "pick", () => start(i), f.color))),
+    row(...match.fighters.map((f, i) => {
+      const card = btn("", "pick", () => start(i), f.color);
+      card.append(el("span", "weapon-icon", WEAPONS[f.kind].emoji),
+        el("strong", "weapon-name", weaponLabel(f.kind)), el("span", "weapon-trait", weaponGrow(f.kind)));
+      return card;
+    })),
   );
   const done = match.daily ? stats.days[dayKey()] : undefined;
   if (done) {
