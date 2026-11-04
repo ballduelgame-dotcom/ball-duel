@@ -199,6 +199,8 @@ GoatCounter 於 **11/05 01:41:46 +08:00** 擷取，官方後台時區核實為 A
 
 **01:51 官方匯出補證**：之後透過官方後台取得 JSON 匯出 27746（產生時間 UTC 11/04 17:51:20，即台北 11/05 01:51:20），ZIP 的 SHA256 與後台顯示一致：`520dab047ed5465819109949c0b2d6c35ac0c1d75d984ce3601564550d87a2eb`。依官方格式說明核對完整 `paths.jsonl` 與 `hit_stats.jsonl`，只有兩個頁訪路徑，沒有 `event:true` 路徑或事件統計列。因此現在可確認此匯出內**已記錄的事件為 0**；這不是由畫面篩選沒顯示事件推論，而是匯出資料的核對結果。是否有未送出／未記錄的實際操作、陌生玩家存片或分享仍未知，不能說真實玩家或操作數為 0。UTC 11/03 起的匯出合計 8 次，排除台北 11/04 前 5 次舊測試後，仍為上述 3 次來源未知的頁訪。沒有開啟個別頁訪收集、新增 API 權限或建立測試流量。本機證據：`clips/market-day2/goat-export-20261105.zip`、`goat-export-20261105-ready.json/jpg`、`goat-export-20261105-analysis.json`。
 
+**01:55 TikTok 官方入口留言**：先確認正式影片評論區沒有既有留言，再由官方 `@ballduel` 發布一則 `Play this duel free 👉 https://ballduelgame-dotcom.github.io/ball-duel/?seed=1354&w=dagger,scythe&lang=en`。畫面顯示創作者身分、全文及評論數 1，留言容器 ID `7704376425135014674`；T0 採成功確認的觀察時間 **2026-11-05 01:55:48.305 +08:00**，當時顯示「1秒前」，不當成伺服器精確發表時間。入口指向同場對決，未證明 TikTok 留言網址可點擊、觀眾已進站或來源已歸因；不將這則官方留言計為陌生人詢問。沒有置頂、重傳或更動影片；新增留言列為既有跨平台觀察的干擾，不能把之後流量增長單獨歸因於它。24h／72h 參考觀察點為 11/06、11/08 的 01:55:48，沒有建立自動量測。證據：`clips/market-day2/tiktok-cta-20261105-posted.json/jpg`。
+
 本機證據：`clips/market-day2/goat-20261105-{raw,timezone,event-filter}.json`、`goat-20261105-dashboard.jpg`、`tiktok-20261105-{prepublish,published,playback,tail-paused,studio-final}.json`、`tiktok-20261105-platform-tail.jpg`、`tiktok-20261105-studio-final.jpg`。其中 published.json 是正式頁最初 403 時的快照；後續成功播放以 playback.json、tail-paused.json 與片尾實圖為準。
 
 ### 營收階段交接
