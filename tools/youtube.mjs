@@ -8,6 +8,7 @@
 //   node tools/youtube.mjs upload 02 --public       # public right away (only once the API project is audited)
 //   node tools/youtube.mjs upload 02 --at 2026-11-05T20:00+08:00   # scheduled (also needs the audit)
 //   node tools/youtube.mjs upload 02 --dry-run      # show what would be sent, no network
+//   node tools/youtube.mjs upload 02 --variant native1080  # a separate upload; keeps the original
 //   node tools/youtube.mjs stats                    # views / likes / comments of everything uploaded
 //
 // Credentials live outside the repo in %APPDATA%\ballduel (or ~/.config/ballduel):
@@ -67,8 +68,9 @@ function videoMeta(num, lang) {
   return { title: post.title.slice(0, 100), description, tags };
 }
 
-function clipFile(num, lang) {
-  const f = readdirSync(CLIPS).find((n) => n.startsWith(`${num}-`) && n.endsWith(`-${lang}.mp4`));
+function clipFile(num, lang, variant) {
+  const pattern = new RegExp(`^${num}-[a-z]+-vs-[a-z]+${variant ? `-${variant}` : ""}-${lang}\\.mp4$`);
+  const f = readdirSync(CLIPS).find((n) => pattern.test(n));
   if (!f) die(`no clips/${num}-*-${lang}.mp4 (run: node tools/render-clips.mjs ${Number(num)} ${lang})`);
   return join(CLIPS, f);
 }
@@ -149,12 +151,12 @@ async function api(method, path, token, body) {
 
 // ---------- commands ----------
 
-async function upload(nums, { lang, privacy, at, dryRun }) {
+async function upload(nums, { lang, variant, privacy, at, dryRun }) {
   const log = readJson(LOG, {});
   const token = dryRun ? null : await accessToken();
   for (const n of nums) {
     const num = n.padStart(2, "0");
-    const file = clipFile(num, lang);
+    const file = clipFile(num, lang, variant);
     const key = file.replace(/^.*[\\/]/, "");
     if (log[key]) {
       console.log(`skip ${key}: already uploaded https://youtube.com/shorts/${log[key].id}`);
@@ -209,13 +211,16 @@ async function stats() {
   }
   const byId = {};
   for (let i = 0; i < ids.length; i += 50) {
-    const j = await api("GET", `videos?part=statistics,status&id=${ids.slice(i, i + 50).join(",")}`, token);
+    const j = await api("GET", `videos?part=statistics,status,processingDetails,fileDetails&id=${ids.slice(i, i + 50).join(",")}`, token);
     for (const v of j.items) byId[v.id] = v;
   }
   const rows = Object.entries(log).map(([file, u]) => {
     const v = byId[u.id];
     const s = v?.statistics ?? {};
+    const source = v?.fileDetails?.videoStreams?.[0];
     return { file, privacy: v?.status?.privacyStatus ?? "gone", views: +(s.viewCount ?? 0),
+      processing: v?.processingDetails?.processingStatus ?? "unknown",
+      source: source ? `${source.widthPixels}x${source.heightPixels}` : "unknown",
       likes: +(s.likeCount ?? 0), comments: +(s.commentCount ?? 0), url: `https://youtube.com/shorts/${u.id}` };
   });
   console.table(rows);
@@ -237,7 +242,9 @@ if (cmd === "auth") await auth();
 else if (cmd === "upload") {
   if (!nums.length) die("which clips? e.g. node tools/youtube.mjs upload 02 08");
   const at = opt("at");
+  const variant = opt("variant");
+  if (flag("variant") && variant !== "native1080") die("--variant must be native1080");
   if (at && Number.isNaN(Date.parse(at))) die(`bad --at time: ${at}`);
-  await upload(nums, { lang: opt("lang") ?? "en", privacy: flag("public") ? "public" : "private", at, dryRun: flag("dry-run") });
+  await upload(nums, { lang: opt("lang") ?? "en", variant, privacy: flag("public") ? "public" : "private", at, dryRun: flag("dry-run") });
 } else if (cmd === "stats") await stats();
 else die(readFileSync(new URL(import.meta.url), "utf8").split("\n").filter((l) => l.startsWith("//")).slice(0, 13).join("\n"));

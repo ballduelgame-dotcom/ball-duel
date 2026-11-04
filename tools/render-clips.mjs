@@ -1,6 +1,6 @@
 // Renders the launch-kit duels to upload-ready 9:16 MP4s by playing them in headless Chrome
-// and saving the game's own clip (same frames and sound a player would get), then re-encoding
-// to 1080x1920 H.264/AAC with ffmpeg.
+// drawing directly into a native 1080x1920 canvas before recording, then encoding H.264/AAC.
+// Versioned filenames preserve the original clips and their YouTube upload records.
 //
 //   node tools/render-clips.mjs                 # all duels, en + zh-TW
 //   node tools/render-clips.mjs 1 en            # one duel, one language
@@ -9,7 +9,7 @@
 // shows the real URL; GoatCounter is blocked so renders don't count as visits.
 
 import { execFileSync } from "node:child_process";
-import { mkdirSync, rmSync } from "node:fs";
+import { existsSync, mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { chromium } from "playwright-core";
 
@@ -43,31 +43,61 @@ const browser = await chromium.launch({
 });
 
 async function render([n, seed, weapons, winner, lang]) {
-  const name = `${String(n).padStart(2, "0")}-${weapons.replace(",", "-vs-")}-${lang}`;
+  const name = `${String(n).padStart(2, "0")}-${weapons.replace(",", "-vs-")}-native1080-${lang}`;
+  const output = join(OUT, `${name}.mp4`);
+  if (existsSync(output)) throw new Error(`${output} already exists; archive it before re-rendering`);
   const page = await browser.newPage({ viewport: { width: 540, height: 960 }, acceptDownloads: true });
+  const errors = [];
+  page.on("pageerror", (error) => errors.push(error.message));
   await page.route(/goatcounter|gc\.zgo\.at/, (r) => r.abort());
   // force the download path instead of the OS share sheet
   await page.addInitScript(() => Object.defineProperty(navigator, "canShare", { value: undefined }));
+  await page.addInitScript(() => {
+    const OriginalRecorder = window.MediaRecorder;
+    window.MediaRecorder = class extends OriginalRecorder {
+      constructor(stream, options) {
+        const track = stream.getVideoTracks()[0].getSettings();
+        if (track.width !== 1080 || track.height !== 1920) throw new Error("Recording canvas is not native 1080x1920");
+        super(stream, { ...options, videoBitsPerSecond: 16_000_000 });
+      }
+    };
+  });
   await page.goto(`${SITE}?seed=${seed}&w=${weapons}&lang=${lang}`);
+  const canvas = await page.locator("#stage").evaluate((canvas) => {
+    const width = canvas.width;
+    const height = canvas.height;
+    if (width !== 720 || height !== 1280) throw new Error("Unexpected logical canvas size");
+    canvas.width = 1080;
+    canvas.height = 1920;
+    // Scale vector drawing coordinates, not a previously rasterised 720p image.
+    canvas.getContext("2d").setTransform(1080 / width, 0, 0, 1920 / height, 0, 0);
+    return { width: canvas.width, height: canvas.height, logicalWidth: width, logicalHeight: height };
+  });
   await page.locator("button.pick").nth(weapons.split(",").indexOf(winner)).click();
   const save = page.locator("button.main").first();
   await save.waitFor({ state: "visible", timeout: 150_000 });
   const [dl] = await Promise.all([page.waitForEvent("download"), save.click()]);
   const raw = join(OUT, "raw", `${name}.${dl.suggestedFilename().split(".").pop()}`);
   await dl.saveAs(raw);
+  if (errors.length) throw new Error(errors.join("\n"));
   await page.close();
-  // constant 30 fps, 1080x1920, platform-friendly H.264 + AAC with the index at the front
+  const probe = JSON.parse(execFileSync("ffprobe", ["-v", "error", "-show_streams", "-show_format", "-of", "json", raw], { encoding: "utf8" }));
+  const video = probe.streams.find((s) => s.codec_type === "video");
+  if (video?.width !== 1080 || video?.height !== 1920) throw new Error("Raw recording is not 1080x1920");
+  // No spatial scaling: retain the native pixels through final encoding.
   execFileSync("ffmpeg", ["-y", "-loglevel", "error", "-i", raw,
-    "-vf", "scale=1080:1920:flags=lanczos,fps=30", "-c:v", "libx264", "-preset", "slow", "-crf", "18",
+    "-vf", "fps=30", "-c:v", "libx264", "-preset", "slow", "-crf", "16",
     "-pix_fmt", "yuv420p", "-c:a", "aac", "-b:a", "192k", "-ar", "48000", "-movflags", "+faststart",
-    join(OUT, `${name}.mp4`)]);
+    output]);
+  writeFileSync(join(OUT, `${name}.json`), JSON.stringify({ seed, weapons, winner, lang, canvas,
+    requestedVideoBitsPerSecond: 16_000_000, raw, output, rawVideo: video, errors }, null, 2));
   console.log(`done ${name}`);
 }
 
-// two at a time: real-time playback, more in parallel risks dropped frames
+// Render sequentially: high-resolution recording competes for encoder resources.
 const queue = [...jobs];
-await Promise.all([0, 1].map(async () => {
+try {
   while (queue.length) await render(queue.shift());
-}));
-await browser.close();
-if (!onlyNum) rmSync(join(OUT, "raw"), { recursive: true, force: true });
+} finally {
+  await browser.close();
+}

@@ -8,6 +8,7 @@
 
 | 檔案 | 用途 | 怎麼寫 |
 |---|---|---|
+| `.agents/GOAL.md` | 目標、里程碑、成功和停損條件、agent 能自己做到哪 | 只有使用者能改 |
 | `.agents/STATE.md` | 現在進度、下一步、等誰 | 直接改成最新狀態 |
 | `.agents/TASKS.md` | 任務板，誰負責哪件事 | 開工前認領，完成後勾掉 |
 | `.agents/LOG.md` | 工作紀錄 | 只往下加，不改舊的 |
@@ -15,7 +16,7 @@
 | `.agents/private.md` | 帳號、私人設定、不能公開的事 | 必要時更新 |
 
 **流程**
-1. 開工：讀 `STATE.md`、`TASKS.md`、`DECISIONS.md`（需要帳號資訊才讀 `private.md`），再 `git pull --rebase`。
+1. 開工：讀 `GOAL.md`、`STATE.md`、`TASKS.md`、`DECISIONS.md`（需要帳號資訊才讀 `private.md`），再 `git pull --rebase`。
 2. 認領：在 `TASKS.md` 把任務標成 `[進行中 codex]` 或 `[進行中 claude]`。別人已認領的、或會改到同一批檔案的，不要碰。
 3. 收工：更新 `STATE.md`，在 `LOG.md` 加一行（日期、agent、做了什麼、commit、還沒做完的），任務打勾，commit 並 push 程式碼。
 4. 不要推翻 `DECISIONS.md` 的決定，除非使用者說要改。
