@@ -12,6 +12,7 @@
 //   node tools/youtube.mjs upload 02 --variant shortsv2     # safe-area layout with original music
 //   node tools/youtube.mjs upload 02 --variant arcadev3     # centred arena with cinematic effects
 //   node tools/youtube.mjs stats                    # views / likes / comments of everything uploaded
+//   node tools/youtube.mjs comments                 # read public videos' top-level comments; no posting
 //
 // Credentials live outside the repo in %APPDATA%\ballduel (or ~/.config/ballduel):
 //   client_secret.json  - OAuth "Desktop app" client downloaded from Google Cloud (docs/youtube-setup.md)
@@ -239,6 +240,43 @@ async function stats({ json = false } = {}) {
   console.log("Evaluate the full 7-day criteria in docs/launch-kit.md; this snapshot alone does not decide stop-loss.");
 }
 
+async function comments() {
+  const token = await accessToken();
+  const log = readJson(LOG, {});
+  const ids = [...new Set(Object.values(log).map((v) => v.id))];
+  const videos = [];
+  const skipped = [];
+  for (let i = 0; i < ids.length; i += 50) {
+    const batch = ids.slice(i, i + 50);
+    const current = await api("GET", `videos?part=status&id=${batch.join(",")}`, token);
+    for (const id of batch) {
+      if (!(current.items ?? []).some((v) => v.id === id)) skipped.push({ id, reason: "unavailable" });
+    }
+    for (const v of current.items ?? []) {
+      if (v.status?.privacyStatus !== "public") {
+        skipped.push({ id: v.id, reason: v.status?.privacyStatus ?? "unknown privacy" });
+        continue;
+      }
+      const j = await api("GET", `commentThreads?part=snippet&videoId=${encodeURIComponent(v.id)}&maxResults=100&order=time&textFormat=plainText`, token);
+      videos.push({ id: v.id, url: `https://youtube.com/shorts/${v.id}`,
+        threads: (j.items ?? []).map((thread) => {
+          const comment = thread.snippet.topLevelComment;
+          return { id: comment.id, text: comment.snippet.textDisplay,
+            publishedAt: comment.snippet.publishedAt, updatedAt: comment.snippet.updatedAt,
+            replies: thread.snippet.totalReplyCount };
+        }), hasMore: Boolean(j.nextPageToken) });
+    }
+  }
+  const snapshot = { capturedAt: new Date().toISOString(), source: "YouTube Data API v3 commentThreads", videos, skipped,
+    limitations: ["Latest 100 published top-level threads per currently public video; replies and held comments are not read.",
+      "Authors are not classified as strangers; positive demand signals require review.",
+      "API errors terminate the command; unavailable comments must not be interpreted as zero."] };
+  mkdirSync(CLIPS, { recursive: true });
+  const snapshotFile = join(CLIPS, `youtube-comments-${snapshot.capturedAt.replace(/[:.]/g, "-")}.json`);
+  writeFileSync(snapshotFile, JSON.stringify(snapshot, null, 2));
+  console.log(JSON.stringify({ ...snapshot, snapshotFile }, null, 2));
+}
+
 // ---------- cli ----------
 
 const [cmd, ...rest] = process.argv.slice(2);
@@ -258,4 +296,5 @@ else if (cmd === "upload") {
   if (at && Number.isNaN(Date.parse(at))) die(`bad --at time: ${at}`);
   await upload(nums, { lang: opt("lang") ?? "en", variant, privacy: flag("public") ? "public" : "private", at, dryRun: flag("dry-run") });
 } else if (cmd === "stats") await stats({ json: flag("json") });
+else if (cmd === "comments") await comments();
 else die(readFileSync(new URL(import.meta.url), "utf8").split("\n").filter((l) => l.startsWith("//")).slice(0, 13).join("\n"));
