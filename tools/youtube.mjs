@@ -5,8 +5,8 @@
 //   node tools/youtube.mjs auth                     # one-time: sign in as the channel, allow access
 //   node tools/youtube.mjs upload 02 08             # upload clips 02 and 08 (English), as private
 //   node tools/youtube.mjs upload 02 --lang zh-TW   # the Chinese version
-//   node tools/youtube.mjs upload 02 --public       # public right away (only once the API project is audited)
-//   node tools/youtube.mjs upload 02 --at 2026-11-05T20:00+08:00   # scheduled (also needs the audit)
+//   node tools/youtube.mjs upload 02 --public       # request public on a NEW upload; verify returned status
+//   node tools/youtube.mjs upload 02 --at 2026-11-05T20:00+08:00   # request a schedule on a NEW upload
 //   node tools/youtube.mjs upload 02 --dry-run      # show what would be sent, no network
 //   node tools/youtube.mjs upload 02 --variant native1080  # a separate upload; keeps the original
 //   node tools/youtube.mjs upload 02 --variant shortsv2     # safe-area layout with original music

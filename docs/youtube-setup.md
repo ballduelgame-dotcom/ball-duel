@@ -115,12 +115,12 @@ Shorts 錄製不使用遊戲音樂，改由工具混入原創立體聲配樂，�
 
 官方介面參數與錯誤定義：[commentThreads.list](https://developers.google.com/youtube/v3/docs/commentThreads/list)。
 
-## 限制：上傳後要手動改「公開」
+## 公開、排程與目前實際限制
 
-Google 規定：未經稽核的 API 專案上傳的影片會被**鎖成私人**。所以第一週的流程是：
+2026-11-04 核對的官方 [videos.insert 文件](https://developers.google.com/youtube/v3/docs/videos/insert) 在 `status.privacyStatus` 說明寫明：未稽核 API 專案上傳的影片不會因此受限於私人觀看。原先「必須先稽核才能公開／排程」的通則說明已過時；本專案尚未實測新上傳直接公開／排程，須以實際回傳狀態和未登入可見性驗證，不能只靠文件宣稱發布成功。
 
-1. `node tools/youtube.mjs upload 02 08` 上傳
-2. 到 YouTube Studio → 內容 → 把影片改成「公開」（或在 Studio 設排程）
-3. 自己留言貼遊戲網址並置頂（API 沒辦法置頂留言）
+本工具的 `--public`／`--at` 只影響**新上傳**，已在 `clips/uploads.json` 的同一影片會跳過，不會更改既有影片。修改既有私人影片的公開或排程狀態需 Studio，或使用另一個 API 方法。官方 [videos.update](https://developers.google.com/youtube/v3/docs/videos/update) 要求 `youtube`、`youtube.force-ssl` 或 `youtubepartner` 其中一個權限；目前授權流程僅請求 `youtube.upload`／`youtube.readonly`，不可假設有更新權限。若選擇擴大權限，由使用者完成登入與同意。
 
-要完全自動（`--public`、`--at 2026-11-05T20:00+08:00` 排程），要先申請 YouTube API 稽核：在 Google 搜尋「YouTube API Services Audit and Quota Extension Form」填表，審核需要幾天到幾週。建議等第一週數字出來、確定要繼續再申請。
+目前日更流程為：品質審查完成後私人上傳，按既定日期在官方 Studio 公開或排程，再核對實際狀態與導流入口。私人上傳完成不等於已公開，準備好的排程也不等於平台已接受。
+
+2026-11-04 批次上傳另遇到 `400 uploadLimitExceeded`，表示帳號可上傳影片數已達限制（[官方錯誤定義](https://developers.google.com/youtube/v3/docs/videos/insert#errors)）。01、09、04、03、06 已成功私人上傳；05、10 保留本機待限制解除。不可重傳已成功影片，也不要將此錯誤當作影片壞檔或 API 配額不足。可恢復時間尚未確認，未建立自動重試。
