@@ -44,6 +44,26 @@ node tools/youtube.mjs stats                      # 所有已上傳影片的播�
 
 上傳紀錄在 `clips/uploads.json`，同一支不會傳兩次。
 
+## 原生 1080×1920 重錄
+
+```bash
+node tools/render-clips.mjs 2 en
+node tools/render-clips.mjs 8 en
+node tools/youtube.mjs upload 02 08 --variant native1080 --dry-run
+node tools/youtube.mjs upload 02 08 --variant native1080
+node tools/youtube.mjs stats
+```
+
+錄影工具直接把線上遊戲的向量繪圖畫進 1080×1920 畫布，保持原本的模擬座標和 seed。
+錄影要求 16 Mbps，再以 CRF 16 編成 H.264/AAC、30 fps；不再放大 720p 影片。實際碼率會隨畫面複雜度變動。
+錄影循序執行，避免高解析度編碼互搶資源；GoatCounter 仍會被擋掉。
+
+新版檔名例如 `02-dagger-vs-scythe-native1080-en.mp4`，原始錄影和驗證資料保留在 `clips/raw/`、`clips/*-native1080-*.json`。
+若新版檔已存在，工具會停止，需先自行封存再重錄。上傳前應檢查原始錄影與成片解析度、開場／對戰／片尾畫面及音效。
+
+`--variant native1080` 只選新版檔案，建立獨立上傳紀錄，不會刪除或覆蓋舊影片；不帶此參數仍只選原版。
+`stats` 同時列出隱私、處理狀態與 YouTube 回報的來源尺寸；來源尺寸不代表所有播放畫質版本都已處理完成。
+
 ## 限制：上傳後要手動改「公開」
 
 Google 規定：未經稽核的 API 專案上傳的影片會被**鎖成私人**。所以第一週的流程是：

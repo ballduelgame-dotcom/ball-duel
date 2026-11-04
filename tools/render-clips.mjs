@@ -48,7 +48,10 @@ async function render([n, seed, weapons, winner, lang]) {
   if (existsSync(output)) throw new Error(`${output} already exists; archive it before re-rendering`);
   const page = await browser.newPage({ viewport: { width: 540, height: 960 }, acceptDownloads: true });
   const errors = [];
-  page.on("pageerror", (error) => errors.push(error.message));
+  page.on("pageerror", (error) => {
+    errors.push(error.message);
+    console.error(`${name}: ${error.message}`);
+  });
   await page.route(/goatcounter|gc\.zgo\.at/, (r) => r.abort());
   // force the download path instead of the OS share sheet
   await page.addInitScript(() => Object.defineProperty(navigator, "canShare", { value: undefined }));
@@ -89,8 +92,18 @@ async function render([n, seed, weapons, winner, lang]) {
     "-vf", "fps=30", "-c:v", "libx264", "-preset", "slow", "-crf", "16",
     "-pix_fmt", "yuv420p", "-c:a", "aac", "-b:a", "192k", "-ar", "48000", "-movflags", "+faststart",
     output]);
+  const finalProbe = JSON.parse(execFileSync("ffprobe", ["-v", "error", "-show_streams", "-show_format", "-of", "json", output], { encoding: "utf8" }));
+  const finalVideo = finalProbe.streams.find((s) => s.codec_type === "video");
+  const finalAudio = finalProbe.streams.find((s) => s.codec_type === "audio");
+  if (finalVideo?.width !== 1080 || finalVideo?.height !== 1920 || finalVideo?.avg_frame_rate !== "30/1"
+      || finalVideo?.codec_name !== "h264" || finalAudio?.codec_name !== "aac"
+      || Math.abs(Number(finalProbe.format.duration) - Number(probe.format.duration)) > 0.25) {
+    throw new Error("Final recording failed resolution, codec, frame rate or duration checks");
+  }
+  execFileSync("ffmpeg", ["-v", "error", "-xerror", "-i", output, "-f", "null", "-"], { stdio: ["ignore", "ignore", "pipe"] });
   writeFileSync(join(OUT, `${name}.json`), JSON.stringify({ seed, weapons, winner, lang, canvas,
-    requestedVideoBitsPerSecond: 16_000_000, raw, output, rawVideo: video, errors }, null, 2));
+    requestedVideoBitsPerSecond: 16_000_000, raw, output, rawVideo: video, finalVideo, finalAudio,
+    rawDuration: probe.format.duration, finalDuration: finalProbe.format.duration, errors }, null, 2));
   console.log(`done ${name}`);
 }
 
