@@ -162,7 +162,7 @@ async function upload(nums, { lang, privacy, at, dryRun }) {
     }
     const meta = videoMeta(num, lang);
     const body = {
-      snippet: { ...meta, categoryId: GAMING, defaultLanguage: lang, defaultAudioLanguage: "zxx" },
+      snippet: { ...meta, categoryId: GAMING, defaultLanguage: lang },
       status: {
         privacyStatus: at ? "private" : privacy,
         ...(at && { publishAt: new Date(at).toISOString() }),
@@ -201,8 +201,12 @@ async function upload(nums, { lang, privacy, at, dryRun }) {
 async function stats() {
   const log = readJson(LOG, {});
   const ids = Object.values(log).map((v) => v.id);
-  if (!ids.length) die("nothing uploaded yet");
   const token = await accessToken();
+  if (!ids.length) {
+    await api("GET", "channels?part=id&mine=true", token);
+    console.log("nothing uploaded yet");
+    return;
+  }
   const byId = {};
   for (let i = 0; i < ids.length; i += 50) {
     const j = await api("GET", `videos?part=statistics,status&id=${ids.slice(i, i + 50).join(",")}`, token);
