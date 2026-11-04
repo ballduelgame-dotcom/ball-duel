@@ -221,7 +221,8 @@ async function stats({ json = false } = {}) {
     const v = byId[u.id];
     const s = v?.statistics ?? {};
     const source = v?.fileDetails?.videoStreams?.[0];
-    return { file, id: u.id, privacy: v?.status?.privacyStatus ?? "unavailable", views: s.viewCount === undefined ? null : +s.viewCount,
+    return { file, id: u.id, privacy: v?.status?.privacyStatus ?? "unavailable", publishAt: v?.status?.publishAt ?? null,
+      views: s.viewCount === undefined ? null : +s.viewCount,
       processing: v?.processingDetails?.processingStatus ?? "unknown",
       source: source ? `${source.widthPixels}x${source.heightPixels}` : "unknown",
       likes: s.likeCount === undefined ? null : +s.likeCount,
