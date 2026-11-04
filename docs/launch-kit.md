@@ -187,7 +187,17 @@ Instagram 文案明確使用目前可行的兩跳 CTA：先點官方 IG 個人�
 
 更正回覆及 IG 發布均另記為既有 YouTube 留言／Threads 原貼文觀察的干擾，不把後續事件增長單獨歸因於其中一個入口。這些修正及跨平台發布不影響 Day1 已公開的 YouTube native1080 原片及其觀察窗口，不重置驗證起點或成功／停損條件，也沒有建立本機自動量測。正式證據：`clips/market-day1/instagram-published.json`、`threads-fixed-published.json`、`platform-ending-acceptance.json` 與兩張 `*-platform-tail.png`；後者為發布後尾段驗收，更新發布快照中當時「平台片尾待驗」的狀態。
 
-TikTok 官方 `@ballduel` 已確認登入及首片上傳入口；修正版檔案選擇回報附加成功後，網站操作權限遭拒絕，已停止該站操作，未按發布、未取得正式影片 ID，**不計為已發布**。不使用其他介面繞過拒絕。完整修正版、英文文案及其他平台證據已備妥；若後續取得使用者重新授權，先查現有草稿及重複發布風險再續，不盲目再上傳。
+### 2026-11-05 TikTok 首片與發布後數據
+
+Chrome Ball 擴充功能本輪已能讀取官方網址及內容。先確認登入官方 `@ballduel`、個人檔案沒有既有影片，再接續先前尚未儲存的上傳，沒有新增第二份上傳。檔名、7.06 MB、約 38 秒及預覽中的 DAGGER WINS／♥1 符合完整修正版；本機指定來源 SHA256 亦重新核對一致。平台草稿未提供可重算的來源雜湊，因此不把檔名或大小說成平台逐位元核對。
+
+正式影片：[7704373383307201844](https://www.tiktok.com/@ballduel/video/7704373383307201844)，作者 `Ball Duel / @ballduel`，Studio 顯示 **2026-11-05 01:43（Asia/Taipei，分鐘精度）**。發布後先顯示僅自己／內容審查中，本輪已將可見性更新為「所有人」，重新載入後確認保留且審查標示消失。直接開啟影片曾回 HTTP 403；從官方個人檔案點擊該影片後，正式播放器成功播放，親看獎盃、DAGGER WINS、♥1，並以可見進度列停在約 37 秒保存片尾證據。此次實際串流為 **576×1024、約 38.493 秒**，不冒稱平台為原生 1080p。播放器未靜音並標示 Ball Duel 原創音樂；未取得主觀聽驗或平台音軌波形，不將開聲狀態當作聲音品質驗收。此建立者檢片不計陌生人需求。24h／72h 參考點為 11/06、11/08 的 01:43，精度隨平台時間；尚未建立自動量測。
+
+GoatCounter 於 **11/05 01:41:46 +08:00** 擷取，官方後台時區核實為 Asia/Taipei，範圍 11/04–11/05（截至擷取，未滿首片 24h）。共有 **3 visits**：11/04 11 時中文 seed1354 路徑 1 次，15 時 `/ball-duel` 2 次；均晚於 Day1 首片公開。來源全為 unknown，Campaigns 無顯示資料，均為 Chrome／Windows。已知 11/04 前的 5 筆舊測試不在這個期間；這 3 筆無足夠證據逐筆辨認是否測試，故陌生玩家數未知，不能當作 3 位新玩家，也不按國家猜測測試身分。
+
+`event/`、`event` 及官方說明的 `is:event` 篩選仍回傳頁訪列，沒有取得可信的事件清單；開始、完成、存片、分享均維持未知，不當成 0。重玩沒有獨立事件，會再次記為 pick，無法從現有匯總分離。成功／停損門檻、Day1=11/04、Day7=11/10 及 YouTube 原片均不變。
+
+本機證據：`clips/market-day2/goat-20261105-{raw,timezone,event-filter}.json`、`goat-20261105-dashboard.jpg`、`tiktok-20261105-{prepublish,published,playback,tail-paused,studio-final}.json`、`tiktok-20261105-platform-tail.jpg`、`tiktok-20261105-studio-final.jpg`。其中 published.json 是正式頁最初 403 時的快照；後續成功播放以 playback.json、tail-paused.json 與片尾實圖為準。
 
 ### 營收階段交接
 
