@@ -100,7 +100,7 @@ async function render([n, seed, weapons, winner, lang]) {
   const music = shorts ? writeShortsMusic(musicFile, Number(probe.format.duration)) : undefined;
   execFileSync("ffmpeg", ["-y", "-loglevel", "error", "-i", raw,
     ...(shorts ? ["-i", musicFile, "-filter_complex",
-      "[0:a]volume=1[fx];[1:a]volume=0.75[bgm];[fx][bgm]amix=inputs=2:duration=first:normalize=0,loudnorm=I=-16:TP=-1.5:LRA=9[audio]",
+      "[0:a]volume=1[fx];[1:a]volume=0.75[bgm];[fx][bgm]amix=inputs=2:duration=first:normalize=0,loudnorm=I=-16:TP=-3:LRA=9[audio]",
       "-map", "0:v:0", "-map", "[audio]"] : []),
     "-vf", "fps=30", "-c:v", "libx264", "-preset", "slow", "-crf", "16",
     "-pix_fmt", "yuv420p", "-c:a", "aac", "-b:a", "192k", "-ar", "48000", "-movflags", "+faststart",

@@ -75,7 +75,7 @@ node tools/render-clips.mjs 8 en --shorts
 遊戲座標、武器數值和 seed 不變；一般遊戲頁面維持原來的資訊。所有畫面文字沿用現有十語系字串。
 
 成片另存為 `*-shortsv2-en.mp4`，混入原創合成配樂 Duel Pulse v1（132 BPM、A minor），包含鼓、低音、琶音及結尾和弦，無第三方音檔或樣本。
-音效與配樂混音後以 -16 LUFS / -1.5 dBTP 為正規化目標；實測音量應在上傳前另外檢查。音樂來源和影片規格寫入相鄰 JSON，原始 WAV 留在 `clips/raw/`。
+音效與配樂混音後以 -16 LUFS / -3 dBTP 為正規化目標，為 AAC 編碼後的峰值留餘量；實測音量應在上傳前另外檢查。音樂來源和影片規格寫入相鄰 JSON，原始 WAV 留在 `clips/raw/`。
 網址仍在上傳說明；第一則留言或置頂需使用者另行授權。產生預覽不會上傳，也不會更改已公開影片。
 
 獲准上傳新版時，使用 `node tools/youtube.mjs upload 02 08 --variant shortsv2 --dry-run` 預覽資料，再移除 `--dry-run`；新版會有獨立的上傳紀錄。
