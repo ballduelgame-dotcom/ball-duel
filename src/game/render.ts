@@ -31,6 +31,9 @@ export class Renderer {
   private clutchShown = false;
   private damageScale = 1;
   private picked: number | null = null;
+  private backdrop?: HTMLCanvasElement;
+  private arenaLayer?: HTMLCanvasElement;
+  private arenaKey = "";
 
   constructor(ctx: CanvasRenderingContext2D, caption: Caption) { this.ctx = ctx; this.caption = caption; }
   select(id: number): void { this.picked = id; }
@@ -77,9 +80,9 @@ export class Renderer {
   }
 
   menu(sim: Sim): void {
-    this.draw(sim); this.scrim(.72); this.badge(tr().whoWins, 524, "#fff", 62);
-    text(this.ctx, tr().vs.toUpperCase(), W / 2, 670, 74, "#c0ff79", "center", 120);
-    sim.balls.forEach((b, i) => this.emblem(b, i ? 485 : 235, 640, 65));
+    this.draw(sim); this.scrim(.72); this.badge(tr().whoWins, 470, "#fff", 48);
+    text(this.ctx, tr().vs.toUpperCase(), W / 2, 590, 58, "#c0ff79", "center", 100);
+    sim.balls.forEach((b, i) => this.emblem(b, i ? 485 : 235, 570, 55));
   }
 
   intro(sim: Sim, t: number): void {
@@ -169,9 +172,23 @@ export class Renderer {
   }
 
   private background(sim: Sim): void {
-    const c = this.ctx, g = c.createRadialGradient(W / 2, H / 2, 80, W / 2, H / 2, 770);
-    g.addColorStop(0, "#1b2440"); g.addColorStop(.6, "#0d1122"); g.addColorStop(1, "#060911");
-    c.fillStyle = g; c.fillRect(0, 0, W, H); c.save();
+    const c = this.ctx;
+    // Cache at the backing canvas resolution: capture remains native 1080p.
+    if (!this.backdrop || this.backdrop.width !== c.canvas.width) {
+      this.backdrop = document.createElement("canvas");
+      this.backdrop.width = c.canvas.width; this.backdrop.height = c.canvas.height;
+      const b = this.backdrop.getContext("2d")!;
+      b.scale(this.backdrop.width / W, this.backdrop.height / H);
+      const g = b.createRadialGradient(W / 2, H / 2, 80, W / 2, H / 2, 770);
+      g.addColorStop(0, "#1b2440"); g.addColorStop(.6, "#0d1122"); g.addColorStop(1, "#060911");
+      b.fillStyle = g; b.fillRect(0, 0, W, H); b.globalAlpha = .16;
+      for (const side of [0, 1]) {
+        const light = b.createRadialGradient(side ? W : 0, 620, 0, side ? W : 0, 620, 410);
+        light.addColorStop(0, sim.balls[side]?.color ?? "#8c9fff"); light.addColorStop(1, "transparent");
+        b.fillStyle = light; b.fillRect(0, 200, W, 900);
+      }
+    }
+    c.drawImage(this.backdrop, 0, 0, W, H); c.save();
     const motion = this.caption.reducedMotion ? 0 : this.clock;
     for (let i = 0; i < 30; i++) {
       const x = (i * 127 + Math.sin(motion * .12 + i) * 24 + W) % W;
@@ -179,14 +196,8 @@ export class Renderer {
       c.globalAlpha = .08 + .07 * Math.sin(i + motion); c.fillStyle = "#b5c9ff";
       c.fillRect(x, y, i % 3 === 0 ? 2 : 1, i % 3 === 0 ? 12 : 3);
     }
-    c.globalAlpha = .16;
-    for (const side of [0, 1]) {
-      const light = c.createRadialGradient(side ? W : 0, 620, 0, side ? W : 0, 620, 410);
-      light.addColorStop(0, sim.balls[side]?.color ?? "#8c9fff"); light.addColorStop(1, "transparent");
-      c.fillStyle = light; c.fillRect(0, 200, W, 900);
-    }
     c.restore();
-    if (!this.caption.shorts) text(c, "BALL DUEL", W / 2, 114, 22, "#c0ff79", "center");
+    if (!this.caption.shorts) text(c, "BALL DUEL", W / 2, 140, 22, "#c0ff79", "center");
   }
 
   private hud(sim: Sim): void {
@@ -212,7 +223,30 @@ export class Renderer {
   private arena(sim: Sim): void {
     const c = this.ctx, { x, y, w, h } = sim.arena;
     const danger = sim.balls.some((b) => b.hp > 0 && b.hp <= 20);
-    const pulse = this.caption.reducedMotion ? .5 : .5 + Math.sin(this.clock * (danger ? 6 : 1.5)) * .5;
+    const key = `${c.canvas.width}:${danger}:${sim.suddenDeath}`;
+    const pad = 32;
+    if (!this.arenaLayer || key !== this.arenaKey) {
+      this.arenaKey = key;
+      const scale = c.canvas.width / W * VIEW.size / ARENA.w;
+      this.arenaLayer = document.createElement("canvas");
+      this.arenaLayer.width = Math.ceil((w + pad * 2) * scale);
+      this.arenaLayer.height = Math.ceil((h + pad * 2) * scale);
+      const layer = this.arenaLayer.getContext("2d")!;
+      layer.scale(scale, scale); layer.translate(pad - x, pad - y);
+      this.paintArena(layer, sim);
+    }
+    c.drawImage(this.arenaLayer, x - pad, y - pad, w + pad * 2, h + pad * 2);
+    if (danger) {
+      const pulse = this.caption.reducedMotion ? .5 : .5 + Math.sin(this.clock * 6) * .5;
+      c.save(); c.strokeStyle = "#ff647c"; c.globalAlpha = .35 + pulse * .35; c.lineWidth = 2 + pulse * 2;
+      rounded(c, x, y, w, h, 28); c.stroke(); c.restore();
+    }
+  }
+
+  private paintArena(c: CanvasRenderingContext2D, sim: Sim): void {
+    const { x, y, w, h } = sim.arena;
+    const danger = sim.balls.some((b) => b.hp > 0 && b.hp <= 20);
+    const pulse = .5;
     c.save(); c.shadowColor = danger ? "#ff647c" : sim.suddenDeath ? "#ffd34d" : "#759eff"; c.shadowBlur = 16 + pulse * 10;
     c.fillStyle = "#0b1222"; rounded(c, x, y, w, h, 28); c.fill();
     c.shadowBlur = 0; c.strokeStyle = danger ? "#ff647c" : sim.suddenDeath ? "#f9cd68" : "#455b86";
