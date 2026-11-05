@@ -248,6 +248,23 @@ TikTok 本輪約 **10:45–10:46** 的正式 Studio 分析（影片 01:43 發布
 
 本機證據：`clips/market-day2/hook07-work/experiment.json`、`independent-media-review.md/json`、`tiktok-published.json/jpg`、`tiktok-platform-{first,ending}.json/jpg`、`tiktok-cta-confirmed.json`。主觀聽驗仍未取得。
 
+### 2026-11-05 Day2 Threads／IG 繁中文案
+
+兩平台官方 `@ballduelgame` 已發布同一份獨立驗收的 07 開場裁切版（SHA256 同上），搭配繁中文案，影片內文字仍為英文。發布前 IG 個人檔案只有既有 02；Threads 只有原 02 與完整片更正回覆，桌面草稿清單顯示尚無草稿，未見重複 07。這不代表所有裝置的草稿已窮盡核對。
+
+| 平台正式影片 | 發布時間（台北，DOM time） | +24h／+72h 參考點 |
+|---|---|---|
+| [Threads DfWCvgyEjEw](https://www.threads.com/@ballduelgame/post/DfWCvgyEjEw) | 11/05 11:18:17 | 11/06、11/08 11:18:17 |
+| [IG Reel DfWDFbTxjdE](https://www.instagram.com/ballduelgame/reel/DfWDFbTxjdE/) | 11/05 11:18:32–33；說明時間與正式連結時間差 1 秒 | 11/06、11/08 11:18:32–33 |
+
+兩個正式播放器均實際播放並親看獎盃、DAGGER WINS、♥4，時長約39.851秒。Threads 首段約0.123秒為雙100HP／FIGHT，當時720×1280；最終約38.707秒完整片尾的串流讀值已為1080×1920，未靜音、readyState=4、error=null，不將兩次觀察概括為全程固定解析度。IG 實際串流720×1280，約39.113秒為完整片尾、readyState=4、error=null，但檢片播放仍為靜音；來源音軌量測通過、平台顯示原始音訊，不等於完成 IG 平台聽驗。兩平台都未取得主觀聽驗，亦未完成平台檔案的獨立完整解碼。
+
+Threads 的同場遊戲連結已核對完整 seed1193、`w=dagger%2Chammer`、`lang=zh-TW` 與來源 UTM。準備時曾發現字面逗號會讓編輯器將連結截在 `w=dagger`，已在發布前移除錯誤預覽並改成編碼逗號，正式貼文 href 完整保留。未開遊戲建立測試流量，實際導流／歸因仍未知。IG 文案保留「個人檔案 Threads 連結 → 那裡的遊戲網址」，本輪重新確認兩個可見連結，仍為兩跳，沒有宣稱已新增 IG 直接遊戲網站。
+
+此為既定日更與繁中文案方向的觀察；不同對局、開場、日期、觀眾及平台分發均有差異，不能單獨歸因語言，也不能由發布成功聲稱留存改善。建立者檢片不算陌生需求，官方入口不算陌生提問。成效待實際 +24h／+72h 快照，沒有背景自動量測；原 Day1／Day7 與繼續／停損門檻均保留。
+
+本機證據：`clips/market-day2/cross07-work/` 的 `plan.json`、`independent-plan-review.md`、`threads-drafts.json`、兩份 `*-published.json` 與正式 `*-platform-ending.json/jpg`。IG 音效主觀聽驗及真實外部轉換仍未核實。
+
 ### 營收階段交接
 
 本週先驗證陌生人的需求，不新增付費功能。出現繼續訊號後，先整理受眾、進入遊戲、完成、重玩／分享的實際證據與未知項，再選一條營收路徑；不因某支影片有播放就視為可營收。
