@@ -265,6 +265,14 @@ Threads 的同場遊戲連結已核對完整 seed1193、`w=dagger%2Chammer`、`l
 
 本機證據：`clips/market-day2/cross07-work/` 的 `plan.json`、`independent-plan-review.md`、`threads-drafts.json`、兩份 `*-published.json` 與正式 `*-platform-ending.json/jpg`。IG 音效主觀聽驗及真實外部轉換仍未核實。
 
+### 2026-11-05 YouTube 07 官方遊戲入口留言
+
+先在官方 Studio 確認 `Ball Duel / @ballduelgame`，移除預設「未回覆」篩選；07 的已發布／最相關及待審核／最新視圖都未見留言。這是當時可見視圖的查重結果，不擴張為所有歷史或未來評論皆為零。接著直接在 Studio 頂層留言欄發布一則同場入口，沒有打開影片播放器、重傳、置頂或擴張 OAuth 權限。
+
+正式留言：[UgxdtYeSJrb91AVvc9h4AaABAg](https://www.youtube.com/watch?v=tCA_2yoOKPw&lc=UgxdtYeSJrb91AVvc9h4AaABAg)，作者 `@ballduelgame`，全文 `Play this duel free 👉 https://ballduelgame-dotcom.github.io/ball-duel/?seed=1193&w=dagger%2Chammer&lang=en`。成功確認 T0 採 **11/05 11:32:08.145 +08:00** 的觀察時間；畫面顯示「0秒前」，不當成伺服器精確發布秒數。Studio 的正式 redirect 目標保留 seed1193、dagger/hammer 與英文參數；未驗證 Shorts 前台可點擊性或真實入站，不把官方留言計作陌生提問。
+
+此 CTA 的 +24h／+72h 參考點為11/06、11/08 11:32:08，與影片本身原有公開起點及02／08留言實驗分開；後續流量不能單獨歸因這則留言。沒有建立自動量測，Day1／Day7及門檻不變。證據：`clips/market-day2/youtube07-cta-work/` 的查重、官方身分、發布前後 JSON 與 `posted.jpg`。
+
 ### 營收階段交接
 
 本週先驗證陌生人的需求，不新增付費功能。出現繼續訊號後，先整理受眾、進入遊戲、完成、重玩／分享的實際證據與未知項，再選一條營收路徑；不因某支影片有播放就視為可營收。
